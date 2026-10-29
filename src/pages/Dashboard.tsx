@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Calendar,
   MapPin,
+  Film,
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Scoreboard from '../components/Scoreboard';
@@ -78,6 +79,7 @@ const EmptyState: React.FC<{ icon: React.ReactNode; title: string; description: 
 
 // ─── Dashboard Page ───
 const Dashboard: React.FC = () => {
+  const currentUser = useStore((s) => s.currentUser);
   const projects = useStore((s) => s.projects);
   const clients = useStore((s) => s.clients);
   const teamMembers = useStore((s) => s.teamMembers);
@@ -86,6 +88,10 @@ const Dashboard: React.FC = () => {
   const invoices = useStore((s) => s.invoices);
   const revisions = useStore((s) => s.revisions);
   const settings = useStore((s) => s.settings);
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canViewFinance = isAdmin || isManager || currentUser?.permissions?.canManageFinance;
 
   // ── Derived stats ──
   const now = new Date();
@@ -304,118 +310,223 @@ const Dashboard: React.FC = () => {
           sub={`${teamMembers.length} tổng thành viên`}
           color="bg-emerald-500"
         />
-        <StatCard
-          icon={<DollarSign size={22} />}
-          label="Doanh thu tháng này"
-          value={formatCurrency(revenueThisMonth, settings.currency)}
-          color="bg-amber-500"
-        />
-        <StatCard
-          icon={<HardDrive size={22} />}
-          label="Thiết bị đang dùng"
-          value={equipmentInUse.length}
-          sub={`${equipment.length} tổng thiết bị`}
-          color="bg-cyan-500"
-        />
-        <StatCard
-          icon={<FileText size={22} />}
-          label="Hóa đơn chờ"
-          value={pendingInvoices.length}
-          sub={pendingInvoices.length > 0 ? formatCurrency(pendingInvoices.reduce((s, i) => s + i.total, 0), settings.currency) : undefined}
-          color="bg-rose-500"
-        />
+        {canViewFinance ? (
+          <>
+            <StatCard
+              icon={<DollarSign size={22} />}
+              label="Doanh thu tháng này"
+              value={formatCurrency(revenueThisMonth, settings.currency)}
+              color="bg-amber-500"
+            />
+            <StatCard
+              icon={<HardDrive size={22} />}
+              label="Thiết bị đang dùng"
+              value={equipmentInUse.length}
+              sub={`${equipment.length} tổng thiết bị`}
+              color="bg-cyan-500"
+            />
+            <StatCard
+              icon={<FileText size={22} />}
+              label="Hóa đơn chờ"
+              value={pendingInvoices.length}
+              sub={pendingInvoices.length > 0 ? formatCurrency(pendingInvoices.reduce((s, i) => s + i.total, 0), settings.currency) : undefined}
+              color="bg-rose-500"
+            />
+          </>
+        ) : (
+          <>
+            <StatCard
+              icon={<HardDrive size={22} />}
+              label="Thiết bị đang dùng"
+              value={equipmentInUse.length}
+              sub={`${equipment.length} tổng thiết bị`}
+              color="bg-cyan-500"
+            />
+            <StatCard
+              icon={<Film size={22} />}
+              label="Phản hồi cần sửa"
+              value={revisions.filter((r) => r.status === 'Changes Requested').length}
+              sub="Revision đang mở"
+              color="bg-amber-500"
+            />
+          </>
+        )}
       </div>
 
       {/* ═══ Artdict Media Scoreboard ═══ */}
       <Scoreboard />
 
       {/* ═══ Charts Row ═══ */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Revenue Bar Chart */}
-        <div className="card col-span-1 p-6 lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
-              <TrendingUp size={18} className="text-indigo-500" />
-              Doanh thu 6 tháng gần nhất
-            </h2>
-          </div>
-          {revenueByMonth.every((m) => m.revenue === 0) ? (
-            <EmptyState
-              icon={<TrendingUp size={48} />}
-              title="Chưa có dữ liệu doanh thu"
-              description="Doanh thu sẽ hiển thị khi bạn tạo hóa đơn và ghi nhận thanh toán."
-            />
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={revenueByMonth} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#9ca3af" />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  stroke="#9ca3af"
-                  tickFormatter={(v) => {
-                    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(0)}M`;
-                    if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
-                    return v;
-                  }}
-                />
-                <Tooltip content={<RevenueTooltip />} />
-                <Bar dataKey="revenue" fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={48} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        {/* Projects by Type Pie Chart */}
-        <div className="card p-6">
-          <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
-            <FolderOpen size={18} className="text-indigo-500" />
-            Dự án theo loại
-          </h2>
-          {projectsByType.length === 0 ? (
-            <EmptyState
-              icon={<FolderOpen size={48} />}
-              title="Chưa có dự án"
-              description="Hãy tạo dự án đầu tiên để thấy phân bổ theo loại."
-            />
-          ) : (
-            <>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={projectsByType}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {projectsByType.map((entry, idx) => (
-                      <Cell key={entry.name} fill={getProjectTypeColor(entry.name) || CHART_COLORS[idx % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number, name: string) => [`${value} dự án`, name]}
-                    contentStyle={{ borderRadius: '8px', fontSize: '13px' }}
+      {canViewFinance ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Revenue Bar Chart */}
+          <div className="card col-span-1 p-6 lg:col-span-2">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+                <TrendingUp size={18} className="text-indigo-500" />
+                Doanh thu 6 tháng gần nhất
+              </h2>
+            </div>
+            {revenueByMonth.every((m) => m.revenue === 0) ? (
+              <EmptyState
+                icon={<TrendingUp size={48} />}
+                title="Chưa có dữ liệu doanh thu"
+                description="Doanh thu sẽ hiển thị khi bạn tạo hóa đơn và ghi nhận thanh toán."
+              />
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={revenueByMonth} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#9ca3af" />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    stroke="#9ca3af"
+                    tickFormatter={(v) => {
+                      if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(0)}M`;
+                      if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+                      return v;
+                    }}
                   />
-                </PieChart>
+                  <Tooltip content={<RevenueTooltip />} />
+                  <Bar dataKey="revenue" fill="#6366f1" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                </BarChart>
               </ResponsiveContainer>
-              <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
-                {projectsByType.map((entry) => (
-                  <div key={entry.name} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                    <span
-                      className="inline-block h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: getProjectTypeColor(entry.name) }}
+            )}
+          </div>
+
+          {/* Projects by Type Pie Chart */}
+          <div className="card p-6">
+            <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+              <FolderOpen size={18} className="text-indigo-500" />
+              Dự án theo loại
+            </h2>
+            {projectsByType.length === 0 ? (
+              <EmptyState
+                icon={<FolderOpen size={48} />}
+                title="Chưa có dự án"
+                description="Hãy tạo dự án đầu tiên để thấy phân bổ theo loại."
+              />
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={projectsByType}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {projectsByType.map((entry, idx) => (
+                        <Cell key={entry.name} fill={getProjectTypeColor(entry.name) || CHART_COLORS[idx % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`${value} dự án`, name]}
+                      contentStyle={{ borderRadius: '8px', fontSize: '13px' }}
                     />
-                    {entry.name} ({entry.value})
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+                  {projectsByType.map((entry) => (
+                    <div key={entry.name} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: getProjectTypeColor(entry.name) }}
+                      />
+                      {entry.name} ({entry.value})
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Projects by Type Pie Chart */}
+          <div className="card p-6">
+            <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+              <FolderOpen size={18} className="text-indigo-500" />
+              Phân loại dự án
+            </h2>
+            {projectsByType.length === 0 ? (
+              <EmptyState
+                icon={<FolderOpen size={48} />}
+                title="Chưa có dự án"
+                description="Hãy tạo dự án đầu tiên để thấy phân bổ theo loại."
+              />
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={projectsByType}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={85}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {projectsByType.map((entry, idx) => (
+                        <Cell key={entry.name} fill={getProjectTypeColor(entry.name) || CHART_COLORS[idx % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`${value} dự án`, name]}
+                      contentStyle={{ borderRadius: '8px', fontSize: '13px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+                  {projectsByType.map((entry) => (
+                    <div key={entry.name} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: getProjectTypeColor(entry.name) }}
+                      />
+                      {entry.name} ({entry.value})
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Project Status Progress */}
+          <div className="card p-6">
+            <h2 className="mb-4 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+              <Film size={18} className="text-indigo-500" />
+              Tiến độ các giai đoạn sản xuất
+            </h2>
+            <div className="space-y-4 pt-2">
+              {[
+                { status: 'In Production', label: 'Đang bấm máy (Production)', color: 'bg-indigo-500' },
+                { status: 'Post-production', label: 'Đang làm hậu kỳ (Post-prod)', color: 'bg-purple-500' },
+                { status: 'Review', label: 'Đang duyệt & sửa (Review)', color: 'bg-amber-500' },
+                { status: 'Confirmed', label: 'Đã chốt lịch (Confirmed)', color: 'bg-emerald-500' },
+              ].map((item) => {
+                const count = projects.filter((p) => p.status === item.status).length;
+                const pct = projects.length ? Math.round((count / projects.length) * 100) : 0;
+                return (
+                  <div key={item.status} className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-gray-700 dark:text-gray-300">{item.label}</span>
+                      <span className="text-gray-500">{count} dự án ({pct}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-dark-800 rounded-full h-2.5 overflow-hidden">
+                      <div className={`${item.color} h-2.5 rounded-full transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ Middle Row: Schedule + Active Projects ═══ */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

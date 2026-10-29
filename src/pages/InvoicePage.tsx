@@ -56,6 +56,7 @@ const paymentStatusLabels: Record<PaymentStatus, string> = {
 
 export default function InvoicePage() {
   const {
+    currentUser,
     invoices,
     projects,
     clients,
@@ -64,6 +65,10 @@ export default function InvoicePage() {
     updateInvoice,
     deleteInvoice,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canFinance = isAdmin || isManager || currentUser?.permissions?.canManageFinance;
 
   // UI state
   const [search, setSearch] = useState('');
@@ -388,6 +393,20 @@ export default function InvoicePage() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
+  if (!canFinance) {
+    return (
+      <div className="card p-8 text-center max-w-lg mx-auto mt-12">
+        <div className="w-14 h-14 bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Giới Hạn Quyền Truy Cập</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Khu vực Quản lý Hóa đơn & Xuất PDF chỉ dành cho Quản lý và Quản trị viên (Admin).
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -556,16 +575,18 @@ export default function InvoicePage() {
                         >
                           <Download className="w-4 h-4" />
                         </button>
-                        <button
-                          className="btn-ghost p-1.5 text-red-500 hover:text-red-700"
-                          title="Xoá"
-                          onClick={() => {
-                            setDeleteTarget(inv);
-                            setShowDeleteConfirm(true);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            className="btn-ghost p-1.5 text-red-500 hover:text-red-700"
+                            title="Xoá"
+                            onClick={() => {
+                              setDeleteTarget(inv);
+                              setShowDeleteConfirm(true);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

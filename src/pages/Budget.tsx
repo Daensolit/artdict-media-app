@@ -81,6 +81,7 @@ type Tab = 'projects' | 'expenses' | 'categories';
 // ====================================================================
 export default function Budget() {
   const {
+    currentUser,
     projects,
     invoices,
     expenses,
@@ -89,6 +90,10 @@ export default function Budget() {
     updateExpense,
     deleteExpense,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canFinance = isAdmin || isManager || currentUser?.permissions?.canManageFinance;
 
   // --- modal state ---
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -285,6 +290,20 @@ export default function Budget() {
   // ====================================================================
   // RENDER
   // ====================================================================
+  if (!canFinance) {
+    return (
+      <div className="card p-8 text-center max-w-lg mx-auto mt-12">
+        <div className="w-14 h-14 bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Giới Hạn Quyền Truy Cập</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Khu vực Quản lý Tài chính & Chi phí chỉ dành cho Quản lý và Quản trị viên (Admin).
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* ── Header ──────────────────────────────────────────────────── */}

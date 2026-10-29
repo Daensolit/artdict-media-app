@@ -62,6 +62,7 @@ const emptyForm: RevisionFormData = {
 
 export default function Revisions() {
   const {
+    currentUser,
     revisions,
     projects,
     addRevision,
@@ -69,6 +70,9 @@ export default function Revisions() {
     deleteRevision,
     settings,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
 
   // UI State
   const [searchQuery, setSearchQuery] = useState('');
@@ -598,13 +602,15 @@ export default function Revisions() {
                               >
                                 <Edit2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                               </button>
-                              <button
-                                onClick={() => setDeleteConfirmId(rev.id)}
-                                className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                title="Xóa"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-500" />
-                              </button>
+                              {(isAdmin || isManager) && (
+                                <button
+                                  onClick={() => setDeleteConfirmId(rev.id)}
+                                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                  title="Xóa"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-500" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>

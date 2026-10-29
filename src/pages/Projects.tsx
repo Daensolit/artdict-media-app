@@ -81,9 +81,15 @@ const emptyFormData: ProjectFormData = {
 
 export default function Projects() {
   const {
+    currentUser,
     projects, clients, teamMembers, equipment,
     addProject, updateProject, deleteProject,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canManageProjects = isAdmin || (isManager && currentUser?.permissions?.canManageProjects);
+  const canViewFinance = isAdmin || isManager || currentUser?.permissions?.canManageFinance;
 
   // UI state
   const [searchQuery, setSearchQuery] = useState('');
@@ -298,10 +304,12 @@ export default function Projects() {
             Quản lý tất cả các dự án sản xuất media của bạn
           </p>
         </div>
-        <button onClick={openCreateModal} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Tạo dự án mới
-        </button>
+        {canManageProjects && (
+          <button onClick={openCreateModal} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Tạo dự án mới
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -436,20 +444,24 @@ export default function Projects() {
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => openEditModal(project)}
-                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-400 transition-colors"
-                      title="Chỉnh sửa"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => openDeleteModal(project)}
-                      className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Xóa"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {canManageProjects && (
+                      <button
+                        onClick={() => openEditModal(project)}
+                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-400 transition-colors"
+                        title="Chỉnh sửa"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <button
+                        onClick={() => openDeleteModal(project)}
+                        className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Xóa"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -483,11 +495,13 @@ export default function Projects() {
                   </div>
                 )}
 
-                {/* Budget */}
-                <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-                  <DollarSign className="w-3.5 h-3.5" />
-                  <span>{formatCurrency(project.budget)}</span>
-                </div>
+                {/* Budget (Admin & Manager) */}
+                {canViewFinance && (
+                  <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+                    <DollarSign className="w-3.5 h-3.5" />
+                    <span>{formatCurrency(project.budget)}</span>
+                  </div>
+                )}
 
                 {/* Team */}
                 {project.teamMemberIds.length > 0 && (
@@ -570,24 +584,32 @@ export default function Projects() {
                       )}
                     </td>
                     <td className="table-cell text-sm">
-                      {formatCurrency(project.budget)}
+                      {canViewFinance ? (
+                        formatCurrency(project.budget)
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">Bảo mật</span>
+                      )}
                     </td>
                     <td className="table-cell">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => openEditModal(project)}
-                          className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-400 transition-colors"
-                          title="Chỉnh sửa"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(project)}
-                          className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"
-                          title="Xóa"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {canManageProjects && (
+                          <button
+                            onClick={() => openEditModal(project)}
+                            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-400 transition-colors"
+                            title="Chỉnh sửa"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
+                            onClick={() => openDeleteModal(project)}
+                            className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors"
+                            title="Xóa"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

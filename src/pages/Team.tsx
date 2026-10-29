@@ -89,6 +89,7 @@ const emptyForm: MemberFormData = {
 
 export default function Team() {
   const {
+    currentUser,
     teamMembers,
     projects,
     equipment,
@@ -96,6 +97,10 @@ export default function Team() {
     updateTeamMember,
     deleteTeamMember,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canManageTeam = isAdmin || (isManager && currentUser?.permissions?.canManageTeam);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -303,10 +308,12 @@ export default function Team() {
                     {selectedMember.phone}
                   </span>
                 )}
-                <span className="flex items-center gap-1.5">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
-                  {formatCurrency(selectedMember.projectRate || selectedMember.hourlyRate || 0)}/dự án
-                </span>
+                {isAdmin && (
+                  <span className="flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4 text-emerald-500" />
+                    {formatCurrency(selectedMember.projectRate || selectedMember.hourlyRate || 0)}/dự án
+                  </span>
+                )}
               </div>
 
               {selectedMember.skills.length > 0 && (
@@ -324,22 +331,26 @@ export default function Team() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => openEditModal(selectedMember)}
-                className="btn-secondary flex items-center gap-2"
-              >
-                <Edit2 className="w-4 h-4" />
-                Sửa
-              </button>
-              <button
-                onClick={() => openDeleteModal(selectedMember)}
-                className="btn-danger flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Xóa
-              </button>
-            </div>
+            {canManageTeam && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => openEditModal(selectedMember)}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Sửa
+                </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => openDeleteModal(selectedMember)}
+                    className="btn-danger flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Xóa
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -544,20 +555,22 @@ export default function Team() {
               />
             </div>
 
-            {/* Project Rate */}
-            <div>
-              <label className="label">Thù lao / dự án (VND)</label>
-              <input
-                type="number"
-                className="input"
-                value={formData.projectRate}
-                onChange={(e) =>
-                  setFormData({ ...formData, projectRate: e.target.value })
-                }
-                placeholder="10000000"
-                min="0"
-              />
-            </div>
+            {/* Project Rate - Chỉ Admin mới có quyền thiết lập */}
+            {isAdmin && (
+              <div>
+                <label className="label">Thù lao / dự án (VND) <span className="text-xs text-primary-600 font-semibold">(Chỉ Admin)</span></label>
+                <input
+                  type="number"
+                  className="input"
+                  value={formData.projectRate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, projectRate: e.target.value })
+                  }
+                  placeholder="10000000"
+                  min="0"
+                />
+              </div>
+            )}
 
             {/* Active */}
             <div className="flex items-end">
@@ -697,10 +710,12 @@ export default function Team() {
             Quản lý thông tin đội ngũ sản xuất và phân công công việc
           </p>
         </div>
-        <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-          <UserPlus className="w-4 h-4" />
-          Thêm thành viên
-        </button>
+        {canManageTeam && (
+          <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
+            <UserPlus className="w-4 h-4" />
+            Thêm thành viên
+          </button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -872,36 +887,40 @@ export default function Team() {
                     </span>
                   </div>
                   {/* Actions */}
-                  <div
-                    className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      onClick={() => toggleActiveStatus(member)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
-                      title={member.isActive ? 'Tạm ngưng' : 'Kích hoạt'}
+                  {canManageTeam && (
+                    <div
+                      className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {member.isActive ? (
-                        <UserX className="w-4 h-4 text-gray-400" />
-                      ) : (
-                        <UserCheck className="w-4 h-4 text-emerald-500" />
+                      <button
+                        onClick={() => toggleActiveStatus(member)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
+                        title={member.isActive ? 'Tạm ngưng' : 'Kích hoạt'}
+                      >
+                        {member.isActive ? (
+                          <UserX className="w-4 h-4 text-gray-400" />
+                        ) : (
+                          <UserCheck className="w-4 h-4 text-emerald-500" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => openEditModal(member)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
+                        title="Chỉnh sửa"
+                      >
+                        <Edit2 className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => openDeleteModal(member)}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                        </button>
                       )}
-                    </button>
-                    <button
-                      onClick={() => openEditModal(member)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
-                      title="Chỉnh sửa"
-                    >
-                      <Edit2 className="w-4 h-4 text-gray-400" />
-                    </button>
-                    <button
-                      onClick={() => openDeleteModal(member)}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
-                      title="Xóa"
-                    >
-                      <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Contact info */}
@@ -939,11 +958,18 @@ export default function Team() {
                   </div>
                 )}
 
-                {/* Bottom row: Rate + Projects + Equipment */}
+                {/* Bottom row: Rate (Admin only) + Projects + Equipment */}
                 <div className="mt-4 pt-3 border-t border-gray-100 dark:border-dark-700 flex items-center justify-between text-sm">
-                  <span className="text-gray-900 dark:text-gray-100 font-medium text-xs sm:text-sm">
-                    {formatCurrency(member.projectRate || member.hourlyRate || 0)}/dự án
-                  </span>
+                  {isAdmin ? (
+                    <span className="text-gray-900 dark:text-gray-100 font-semibold text-xs sm:text-sm">
+                      {formatCurrency(member.projectRate || member.hourlyRate || 0)}/dự án
+                    </span>
+                  ) : (
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      Đội ngũ Artdict
+                    </span>
+                  )}
                   <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500">
                     <span
                       className="flex items-center gap-1"

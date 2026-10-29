@@ -87,6 +87,7 @@ const defaultFormData: TaskFormData = {
 
 export default function PostProduction() {
   const {
+    currentUser,
     postProductionTasks,
     projects,
     teamMembers,
@@ -94,6 +95,9 @@ export default function PostProduction() {
     updatePostProductionTask,
     deletePostProductionTask,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
 
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -251,10 +255,12 @@ export default function PostProduction() {
               </span>
             )}
           </button>
-          <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Thêm task
-          </button>
+          {(isAdmin || isManager) && (
+            <button onClick={openAddModal} className="btn-primary flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Thêm task
+            </button>
+          )}
         </div>
       </div>
 
@@ -431,18 +437,22 @@ export default function PostProduction() {
                                 openEditModal(task);
                               }}
                               className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                              title="Cập nhật tiến độ"
                             >
                               <Edit2 className="w-3.5 h-3.5 text-gray-500" />
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteConfirmId(task.id);
-                              }}
-                              className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                            </button>
+                            {(isAdmin || isManager) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmId(task.id);
+                                }}
+                                className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                                title="Xóa task"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                              </button>
+                            )}
                           </div>
                         </div>
 

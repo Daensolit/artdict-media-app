@@ -88,6 +88,7 @@ const blankForm: EquipmentForm = {
 // ── Component ──────────────────────────────────────────────────────
 export default function Equipment() {
   const {
+    currentUser,
     equipment,
     teamMembers,
     projects,
@@ -99,6 +100,10 @@ export default function Equipment() {
     updateEquipmentChecklist,
     deleteEquipmentChecklist,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canManageEquipment = isAdmin || (isManager && currentUser?.permissions?.canManageEquipment);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -323,9 +328,11 @@ export default function Equipment() {
             Theo dõi, phân bổ và bảo trì trang thiết bị sản xuất
           </p>
         </div>
-        <button className="btn-primary flex items-center gap-2" onClick={openAdd}>
-          <Plus className="w-4 h-4" /> Thêm thiết bị
-        </button>
+        {canManageEquipment && (
+          <button className="btn-primary flex items-center gap-2" onClick={openAdd}>
+            <Plus className="w-4 h-4" /> Thêm thiết bị
+          </button>
+        )}
       </div>
 
       {/* Stats row */}
@@ -413,22 +420,26 @@ export default function Equipment() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      className="btn-ghost p-1.5"
-                      onClick={() => openEdit(item)}
-                      title="Chỉnh sửa"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="btn-ghost p-1.5 text-red-500"
-                      onClick={() => setDeleteTarget(item)}
-                      title="Xóa"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {canManageEquipment && (
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="btn-ghost p-1.5"
+                        onClick={() => openEdit(item)}
+                        title="Chỉnh sửa"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      {isAdmin && (
+                        <button
+                          className="btn-ghost p-1.5 text-red-500"
+                          onClick={() => setDeleteTarget(item)}
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Status badge */}
@@ -510,7 +521,7 @@ export default function Equipment() {
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
-              {checklistProjectId && (
+              {checklistProjectId && canManageEquipment && (
                 <button className="btn-primary flex items-center gap-2" onClick={openAddChecklist}>
                   <Plus className="w-4 h-4" /> Tạo checklist
                 </button>
@@ -539,22 +550,26 @@ export default function Equipment() {
                       Người phụ trách: {memberName(cl.responsiblePersonId)}
                     </p>
                   </div>
-                  <div className="flex gap-1">
-                    <button
-                      className="btn-ghost p-1.5"
-                      onClick={() => openEditChecklist(cl)}
-                      title="Sửa checklist"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="btn-ghost p-1.5 text-red-500"
-                      onClick={() => setDeleteChecklistTarget(cl)}
-                      title="Xóa checklist"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {canManageEquipment && (
+                    <div className="flex gap-1">
+                      <button
+                        className="btn-ghost p-1.5"
+                        onClick={() => openEditChecklist(cl)}
+                        title="Sửa checklist"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      {isAdmin && (
+                        <button
+                          className="btn-ghost p-1.5 text-red-500"
+                          onClick={() => setDeleteChecklistTarget(cl)}
+                          title="Xóa checklist"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Items table */}

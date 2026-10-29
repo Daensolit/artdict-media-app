@@ -23,9 +23,15 @@ const emptyForm = {
 
 export default function Clients() {
   const {
+    currentUser,
     clients, projects, invoices, settings,
     addClient, updateClient, deleteClient,
   } = useStore();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const isManager = currentUser?.role === 'manager';
+  const canManageClients = isAdmin || (isManager && currentUser?.permissions?.canManageClients);
+  const canViewFinance = isAdmin || isManager || currentUser?.permissions?.canManageFinance;
 
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -109,10 +115,12 @@ export default function Clients() {
             Quản lý thông tin khách hàng và dự án liên quan
           </p>
         </div>
-        <button className="btn-primary flex items-center gap-2" onClick={openAdd}>
-          <Plus className="w-4 h-4" />
-          Thêm khách hàng
-        </button>
+        {canManageClients && (
+          <button className="btn-primary flex items-center gap-2" onClick={openAdd}>
+            <Plus className="w-4 h-4" />
+            Thêm khách hàng
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -162,22 +170,26 @@ export default function Clients() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        className="btn-ghost p-1.5"
-                        onClick={() => openEdit(client)}
-                        title="Sửa"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="btn-ghost p-1.5 text-red-500 hover:text-red-700"
-                        onClick={() => setDeleteConfirm(client.id)}
-                        title="Xóa"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    {canManageClients && (
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          className="btn-ghost p-1.5"
+                          onClick={() => openEdit(client)}
+                          title="Sửa"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            className="btn-ghost p-1.5 text-red-500 hover:text-red-700"
+                            onClick={() => setDeleteConfirm(client.id)}
+                            title="Xóa"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Contact info */}
@@ -211,12 +223,14 @@ export default function Clients() {
                       </span>
                       <span className="text-gray-500 dark:text-gray-400">dự án</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <DollarSign className="w-4 h-4 text-emerald-500" />
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {formatCurrency(client.totalRevenue, settings.currency)}
-                      </span>
-                    </div>
+                    {canViewFinance && (
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <DollarSign className="w-4 h-4 text-emerald-500" />
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {formatCurrency(client.totalRevenue, settings.currency)}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Notes */}
