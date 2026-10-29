@@ -595,7 +595,7 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       // Authentication & Users
       users: initialUsers,
-      currentUser: initialUsers[0], // Default logged in as daensolit
+      currentUser: null, // Bắt đầu ở màn hình đăng nhập (không tự động đăng nhập admin)
 
       login: (username: string, password: string) => {
         const user = get().users.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
@@ -833,16 +833,14 @@ export const useStore = create<AppState>()(
         set((state) => ({ settings: { ...state.settings, ...updates } })),
     }),
     {
-      name: 'artdict-media-storage-v3',
+      name: 'artdict-media-storage-v5',
       onRehydrateStorage: () => (state) => {
         if (state) {
           const hasDaensolit = state.users?.some((u) => u.username === 'daensolit');
           if (!hasDaensolit) {
             state.users = [...(state.users || []), initialUsers[0]];
           }
-          if (!state.currentUser) {
-            state.currentUser = state.users.find((u) => u.username === 'daensolit') || initialUsers[0];
-          }
+          // Giữ nguyên currentUser từ storage hoặc null, TUYỆT ĐỐI KHÔNG tự động đăng nhập admin!
         }
       },
     }
