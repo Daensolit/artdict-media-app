@@ -593,10 +593,10 @@ const initialPostProductionTasks: PostProductionTask[] = [
 
 export const useStore = create<AppState>()(
   persist(
-    (set, get) => {
+    (originalSet, get) => {
       // Wrapper set để tự động kích hoạt push lên Supabase khi có bất kỳ thay đổi nào
-      const customSet: typeof set = (...args) => {
-        set(...args);
+      const set: typeof originalSet = (...args) => {
+        originalSet(...args);
         pushStateToCloud();
       };
 
@@ -838,7 +838,7 @@ export const useStore = create<AppState>()(
 
       // Settings
       updateSettings: (updates: Partial<AppSettings>) =>
-        customSet((state) => ({ settings: { ...state.settings, ...updates } })),
+        set((state) => ({ settings: { ...state.settings, ...updates } })),
     };
   },
     {
