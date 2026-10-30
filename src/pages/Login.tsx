@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clapperboard, Lock, User as UserIcon, ShieldCheck, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Lock, User as UserIcon, ArrowRight, AlertCircle } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export default function Login() {
@@ -21,13 +21,6 @@ export default function Login() {
       }
       setLoading(false);
     }, 200);
-  };
-
-  const handleQuickLogin = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setError('');
-    login(u, p);
   };
 
   return (
@@ -103,39 +96,6 @@ export default function Login() {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick Login Helper */}
-          <div className="mt-6 pt-6 border-t border-slate-700/60">
-            <p className="text-xs text-slate-400 mb-3 font-medium flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Tài khoản có sẵn để đăng nhập thử nghiệm:</span>
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('daensolit', '160707')}
-                className="p-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-200 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Admin Daensolit</span>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono mt-0.5">160707</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('hoanganh', '123456')}
-                className="p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-200 text-left transition-all"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-400">
-                  <UserIcon className="w-3.5 h-3.5" />
-                  <span>Nhân viên Hoàng Anh</span>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono mt-0.5">123456</div>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer info */}
