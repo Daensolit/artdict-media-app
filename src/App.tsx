@@ -15,9 +15,15 @@ import UsersPage from './pages/UsersPage';
 import AdminDashboard from './pages/AdminDashboard';
 import { useEffect } from 'react';
 import { useStore } from './store/useStore';
+import { initCloudSync } from './services/syncService';
 
 function App() {
   const { settings } = useStore();
+
+  useEffect(() => {
+    // Khởi tạo đồng bộ Realtime từ Supabase Cloud
+    initCloudSync();
+  }, []);
 
   useEffect(() => {
     if (settings.darkMode) {

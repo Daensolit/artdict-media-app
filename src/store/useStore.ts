@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { pushStateToCloud } from '../services/syncService';
 import type {
   AppState, Project, Client, TeamMember, Equipment, EquipmentChecklist,
   CalendarEvent, PostProductionTask, Revision, Expense, Invoice,
@@ -592,7 +593,14 @@ const initialPostProductionTasks: PostProductionTask[] = [
 
 export const useStore = create<AppState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      // Wrapper set để tự động kích hoạt push lên Supabase khi có bất kỳ thay đổi nào
+      const customSet: typeof set = (...args) => {
+        set(...args);
+        pushStateToCloud();
+      };
+
+      return {
       // Authentication & Users
       users: initialUsers,
       currentUser: null, // Bắt đầu ở màn hình đăng nhập (không tự động đăng nhập admin)
@@ -830,8 +838,9 @@ export const useStore = create<AppState>()(
 
       // Settings
       updateSettings: (updates: Partial<AppSettings>) =>
-        set((state) => ({ settings: { ...state.settings, ...updates } })),
-    }),
+        customSet((state) => ({ settings: { ...state.settings, ...updates } })),
+    };
+  },
     {
       name: 'artdict-media-storage-v5',
       onRehydrateStorage: () => (state) => {
