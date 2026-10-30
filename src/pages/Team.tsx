@@ -308,12 +308,6 @@ export default function Team() {
                     {selectedMember.phone}
                   </span>
                 )}
-                {isAdmin && (
-                  <span className="flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4 text-emerald-500" />
-                    {formatCurrency(selectedMember.projectRate || selectedMember.hourlyRate || 0)}/dự án
-                  </span>
-                )}
               </div>
 
               {selectedMember.skills.length > 0 && (
@@ -554,23 +548,6 @@ export default function Team() {
                 placeholder="0901 234 567"
               />
             </div>
-
-            {/* Project Rate - Chỉ Admin mới có quyền thiết lập */}
-            {isAdmin && (
-              <div>
-                <label className="label">Thù lao / dự án (VND) <span className="text-xs text-primary-600 font-semibold">(Chỉ Admin)</span></label>
-                <input
-                  type="number"
-                  className="input"
-                  value={formData.projectRate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, projectRate: e.target.value })
-                  }
-                  placeholder="10000000"
-                  min="0"
-                />
-              </div>
-            )}
 
             {/* Active */}
             <div className="flex items-end">
@@ -958,18 +935,12 @@ export default function Team() {
                   </div>
                 )}
 
-                {/* Bottom row: Rate (Admin only) + Projects + Equipment */}
+                {/* Bottom row: Member status tag + Projects + Equipment */}
                 <div className="mt-4 pt-3 border-t border-gray-100 dark:border-dark-700 flex items-center justify-between text-sm">
-                  {isAdmin ? (
-                    <span className="text-gray-900 dark:text-gray-100 font-semibold text-xs sm:text-sm">
-                      {formatCurrency(member.projectRate || member.hourlyRate || 0)}/dự án
-                    </span>
-                  ) : (
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Đội ngũ Artdict
-                    </span>
-                  )}
+                  <span className="text-xs text-primary-600 dark:text-primary-400 font-medium flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
+                    Thành viên Artdict
+                  </span>
                   <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500">
                     <span
                       className="flex items-center gap-1"

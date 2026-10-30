@@ -44,6 +44,9 @@ function getProjectTypeBadgeColor(type: string): string {
 interface ProjectFormData {
   name: string;
   clientId: string;
+  isCustomClient?: boolean;
+  clientCustomName?: string;
+  clientCustomPhone?: string;
   managerId: string;
   type: ProjectType;
   status: ProjectStatus;
@@ -58,11 +61,15 @@ interface ProjectFormData {
   driveLink: string;
   moodboardLinks: string[];
   notes: string;
+  autoSyncCalendar?: boolean;
 }
 
 const emptyFormData: ProjectFormData = {
   name: '',
   clientId: '',
+  isCustomClient: false,
+  clientCustomName: '',
+  clientCustomPhone: '',
   managerId: '',
   type: 'Wedding',
   status: 'Draft',
@@ -77,6 +84,7 @@ const emptyFormData: ProjectFormData = {
   driveLink: '',
   moodboardLinks: [''],
   notes: '',
+  autoSyncCalendar: true,
 };
 
 export default function Projects() {
@@ -84,6 +92,7 @@ export default function Projects() {
     currentUser,
     projects, clients, teamMembers, equipment,
     addProject, updateProject, deleteProject,
+    calendarEvents, addCalendarEvent, updateCalendarEvent,
   } = useStore();
 
   const isAdmin = currentUser?.role === 'admin';
@@ -125,9 +134,16 @@ export default function Projects() {
   }, [projects, clients, searchQuery, statusFilter, typeFilter, priorityFilter, managerFilter]);
 
   // Helpers
-  const getClientName = (clientId: string) => {
-    const client = clients.find((c) => c.id === clientId);
-    return client?.name || 'Không rõ';
+  const getClientName = (projectOrClientId: Project | string) => {
+    if (typeof projectOrClientId === 'object') {
+      if (projectOrClientId.clientCustomName) {
+        return projectOrClientId.clientCustomName;
+      }
+      const client = clients.find((c) => c.id === projectOrClientId.clientId);
+      return client?.name || 'Chưa xác định';
+    }
+    const client = clients.find((c) => c.id === projectOrClientId);
+    return client?.name || 'Chưa xác định';
   };
 
   const getManagerName = (managerId?: string) => {
@@ -153,6 +169,9 @@ export default function Projects() {
     setFormData({
       name: project.name,
       clientId: project.clientId,
+      isCustomClient: Boolean(project.clientCustomName),
+      clientCustomName: project.clientCustomName || '',
+      clientCustomPhone: project.clientCustomPhone || '',
       managerId: project.managerId || '',
       type: project.type,
       status: project.status,
@@ -167,6 +186,7 @@ export default function Projects() {
       driveLink: project.driveLink,
       moodboardLinks: project.moodboardLinks.length > 0 ? [...project.moodboardLinks] : [''],
       notes: project.notes,
+      autoSyncCalendar: true,
     });
     setIsFormModalOpen(true);
   };
@@ -181,20 +201,34 @@ export default function Projects() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const now = new Date().toISOString();
-    const cleanedShootDates = formData.shootDates.filter((d) => d.trim() !== '');
-    const cleanedMoodboardLinks = formData.moodboardLinks.filter((l) => l.trim() !== '');
+    const cleanedShootDates = formData.shootDates.filter((d) => d && d.trim() !== '');
+    const cleanedMoodboardLinks = formData.moodboardLinks.filter((l) => l && l.trim() !== '');
+
+    const targetClientId = formData.isCustomClient ? '' : formData.clientId;
+    const targetCustomName = formData.isCustomClient ? formData.clientCustomName?.trim() : undefined;
+    const targetCustomPhone = formData.isCustomClient ? formData.clientCustomPhone?.trim() : undefined;
+
+    let targetProjectId = editingProject?.id;
 
     if (editingProject) {
       updateProject(editingProject.id, {
         ...formData,
+        clientId: targetClientId,
+        clientCustomName: targetCustomName,
+        clientCustomPhone: targetCustomPhone,
         shootDates: cleanedShootDates,
         moodboardLinks: cleanedMoodboardLinks,
         updatedAt: now,
       });
     } else {
+      const newId = generateId();
+      targetProjectId = newId;
       const newProject: Project = {
-        id: generateId(),
+        id: newId,
         ...formData,
+        clientId: targetClientId,
+        clientCustomName: targetCustomName,
+        clientCustomPhone: targetCustomPhone,
         shootDates: cleanedShootDates,
         moodboardLinks: cleanedMoodboardLinks,
         createdAt: now,
@@ -202,6 +236,55 @@ export default function Projects() {
       };
       addProject(newProject);
     }
+
+    // TỰ ĐỘNG ĐẶT LỊCH QUAY TRÊN PHẦN LỊCH (CALENDAR) NẾU CÓ NGÀY RÕ RÀNG
+    if (formData.autoSyncCalendar && targetProjectId && cleanedShootDates.length > 0) {
+      cleanedShootDates.forEach((shootDate, idx) => {
+        // Kiểm tra xem lịch này đã tồn tại cho dự án và ngày này chưa
+        const existingEvent = calendarEvents.find(
+          (ce) => ce.projectId === targetProjectId && ce.date === shootDate
+        );
+        if (!existingEvent) {
+          const newEvent = {
+            id: generateId(),
+            projectId: targetProjectId!,
+            title: `🎬 Lịch quay: ${formData.name} (Ngày ${idx + 1})`,
+            date: shootDate,
+            startTime: '08:00',
+            endTime: '18:00',
+            type: 'shoot' as const,
+            location: formData.location || 'Tại hiện trường',
+            reminder: 120, // nhắc trước 2 tiếng
+            notes: `Lịch quay tự động tạo từ Dự án ${formData.name}. Brief: ${formData.brief.slice(0, 100)}`,
+            color: '#f59e0b',
+          };
+          addCalendarEvent(newEvent);
+        }
+      });
+    }
+
+    // Tự động tạo sự kiện Deadline nếu có
+    if (formData.autoSyncCalendar && targetProjectId && formData.deadline) {
+      const existingDeadline = calendarEvents.find(
+        (ce) => ce.projectId === targetProjectId && ce.date === formData.deadline && ce.type === 'deadline'
+      );
+      if (!existingDeadline) {
+        addCalendarEvent({
+          id: generateId(),
+          projectId: targetProjectId,
+          title: `⏰ DEADLINE: Bàn giao ${formData.name}`,
+          date: formData.deadline,
+          startTime: '17:00',
+          endTime: '18:00',
+          type: 'deadline',
+          location: 'Artdict Production',
+          reminder: 1440, // nhắc trước 1 ngày
+          notes: `Hạn chót bàn giao dự án ${formData.name}.`,
+          color: '#ef4444',
+        });
+      }
+    }
+
     setIsFormModalOpen(false);
     setEditingProject(null);
   };
@@ -465,7 +548,7 @@ export default function Projects() {
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                  {getClientName(project.clientId)}
+                  {getClientName(project)}
                 </p>
               </div>
 
@@ -555,7 +638,7 @@ export default function Projects() {
                       </button>
                     </td>
                     <td className="table-cell text-gray-500 dark:text-gray-400">
-                      {getClientName(project.clientId)}
+                      {getClientName(project)}
                     </td>
                     <td className="table-cell">
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded">
@@ -655,19 +738,50 @@ export default function Projects() {
                 required
               />
             </div>
+            {/* Client selector with Direct Custom Button */}
             <div>
-              <label className="label">Khách hàng *</label>
-              <select
-                value={formData.clientId}
-                onChange={(e) => setFormData((p) => ({ ...p, clientId: e.target.value }))}
-                className="select w-full"
-                required
-              >
-                <option value="">Chọn khách hàng</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ''}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-1">
+                <label className="label mb-0">Khách hàng *</label>
+                <button
+                  type="button"
+                  onClick={() => setFormData((p) => ({ ...p, isCustomClient: !p.isCustomClient }))}
+                  className="text-xs text-primary-500 hover:text-primary-600 dark:text-primary-400 font-medium underline cursor-pointer transition-colors"
+                >
+                  {formData.isCustomClient ? '← Chọn từ danh sách có sẵn' : '+ Tùy chỉnh thông tin ngay (không cần tạo trước)'}
+                </button>
+              </div>
+
+              {formData.isCustomClient ? (
+                <div className="space-y-2 p-3 bg-primary-50/40 dark:bg-primary-950/20 border border-primary-200/60 dark:border-primary-800/40 rounded-xl">
+                  <input
+                    type="text"
+                    value={formData.clientCustomName || ''}
+                    onChange={(e) => setFormData((p) => ({ ...p, clientCustomName: e.target.value }))}
+                    className="input w-full"
+                    placeholder="Tên khách hàng / Nhãn hàng (VD: Anh Đại Dương Homestay)..."
+                    required
+                  />
+                  <input
+                    type="text"
+                    value={formData.clientCustomPhone || ''}
+                    onChange={(e) => setFormData((p) => ({ ...p, clientCustomPhone: e.target.value }))}
+                    className="input w-full text-xs"
+                    placeholder="Số điện thoại / Liên hệ nhanh (không bắt buộc)..."
+                  />
+                </div>
+              ) : (
+                <select
+                  value={formData.clientId}
+                  onChange={(e) => setFormData((p) => ({ ...p, clientId: e.target.value }))}
+                  className="select w-full"
+                  required
+                >
+                  <option value="">Chọn khách hàng</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ''}</option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
@@ -775,10 +889,13 @@ export default function Projects() {
             </div>
           </div>
 
-          {/* Shoot Dates */}
+          {/* Shoot Dates with Auto Calendar notification */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="label mb-0">Ngày quay</label>
+              <div>
+                <label className="label mb-0">Ngày quay</label>
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">⚡ Tự động đồng bộ lên Lịch (Calendar) khi lưu</span>
+              </div>
               <button type="button" onClick={addShootDate} className="btn-ghost text-xs flex items-center gap-1">
                 <Plus className="w-3 h-3" /> Thêm ngày
               </button>

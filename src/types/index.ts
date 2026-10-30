@@ -43,6 +43,8 @@ export interface Project {
   id: string;
   name: string;
   clientId: string;
+  clientCustomName?: string; // Tên khách hàng nhập tay nếu chưa có trong danh sách
+  clientCustomPhone?: string; // Số điện thoại khách hàng tùy chỉnh
   managerId?: string; // Người quản lý job (Job Lead / Project Manager)
   salesPersonId?: string; // Người mang job về (Job Hunter)
   type: ProjectType;

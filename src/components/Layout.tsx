@@ -39,7 +39,7 @@ export default function Layout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
         {/* Top Header bar */}
-        <header className="h-14 bg-white dark:bg-dark-900 border-b border-gray-200 dark:border-dark-700 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 z-20">
+        <header className="h-14 bg-white/75 dark:bg-[#0a0e17]/75 backdrop-blur-2xl border-b border-slate-200/70 dark:border-white/10 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 z-20 shadow-xs">
           {/* Left section: Hamburger menu on mobile + Search on desktop */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile Hamburger Menu button */}
@@ -179,7 +179,7 @@ export default function Layout() {
         </header>
 
         {/* Main Content View with responsive padding */}
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 lg:p-6 bg-gray-50 dark:bg-dark-950 w-full min-w-0">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 lg:p-6 bg-transparent w-full min-w-0">
           <Outlet />
         </main>
       </div>

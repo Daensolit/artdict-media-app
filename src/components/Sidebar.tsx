@@ -46,16 +46,16 @@ export default function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
     <>
       {/* ─── DESKTOP SIDEBAR (Visible on lg screens and up) ─── */}
       <aside
-        className={`hidden lg:flex flex-col h-screen bg-white dark:bg-dark-900 border-r border-gray-200 dark:border-dark-700 sticky top-0 transition-all duration-300 z-30 shrink-0 ${
-          collapsed ? 'w-[68px]' : 'w-60'
+        className={`hidden lg:flex flex-col h-screen bg-white/70 dark:bg-[#0a0e17]/80 backdrop-blur-2xl border-r border-slate-200/70 dark:border-white/10 sticky top-0 transition-all duration-300 z-30 shrink-0 ${
+          collapsed ? 'w-[72px]' : 'w-64'
         }`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-200 dark:border-dark-700">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-200/60 dark:border-white/10">
           <img
             src="/artdict-logo.jpg"
             alt="Artdict Media"
-            className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-md border border-gray-200 dark:border-dark-700"
+            className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-lg ring-1 ring-white/20 dark:ring-white/10"
           />
           {!collapsed && (
             <div className="overflow-hidden">
@@ -108,12 +108,12 @@ export default function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[80vw] bg-white dark:bg-dark-900 border-r border-gray-200 dark:border-dark-700 shadow-2xl flex flex-col lg:hidden transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white/90 dark:bg-[#0c111c]/90 backdrop-blur-2xl border-r border-slate-200/70 dark:border-white/10 shadow-2xl flex flex-col lg:hidden transition-transform duration-300 ease-out ${
           isOpenMobile ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Drawer Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-700">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200/60 dark:border-white/10">
           <div className="flex items-center gap-3">
             <img
               src="/artdict-logo.jpg"
