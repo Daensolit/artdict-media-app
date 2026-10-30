@@ -456,13 +456,13 @@ export default function Projects() {
           </select>
 
           {/* View toggle */}
-          <div className="flex items-center border border-gray-200 dark:border-dark-700 rounded-lg overflow-hidden">
+          <div className="flex items-center border border-slate-200/80 dark:border-white/[0.08] rounded-xl overflow-hidden bg-slate-100/50 dark:bg-white/[0.03]">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 transition-colors ${
+              className={`p-2 transition-all ${
                 viewMode === 'grid'
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  ? 'bg-orange-500/15 text-orange-500 border-r border-orange-500/30 font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
               }`}
               title="Grid view"
             >
@@ -470,10 +470,10 @@ export default function Projects() {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 transition-colors ${
+              className={`p-2 transition-all ${
                 viewMode === 'list'
-                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  ? 'bg-orange-500/15 text-orange-500 font-semibold'
+                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
               }`}
               title="List view"
             >

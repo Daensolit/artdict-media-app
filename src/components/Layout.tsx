@@ -6,6 +6,7 @@ import { useState, useRef } from 'react';
 import Login from '../pages/Login';
 import Modal from './Modal';
 import Avatar from './Avatar';
+import AmbientGlow from './AmbientGlow';
 import { getAvatarColor, getInitials, generateId, compressAvatarImage } from '../utils/helpers';
 import type { TeamRole } from '../types';
 
@@ -168,7 +169,10 @@ export default function Layout() {
   }
 
   return (
-    <div className={`flex h-screen overflow-hidden ${settings.darkMode ? 'dark' : ''}`}>
+    <div className={`flex h-screen overflow-hidden ${settings.darkMode ? 'dark' : ''} bg-[#f8fafc] dark:bg-[#070709]`}>
+      {/* visionOS Spatial Ambient Mesh Glow */}
+      <AmbientGlow />
+
       {/* Responsive Sidebar (Desktop permanent + Mobile slide-out drawer) */}
       <Sidebar
         isOpenMobile={isMobileMenuOpen}
@@ -176,15 +180,15 @@ export default function Layout() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
-        {/* Top Header bar */}
-        <header className="h-14 bg-white/75 dark:bg-[#0a0e17]/75 backdrop-blur-2xl border-b border-slate-200/70 dark:border-white/10 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 z-20 shadow-xs">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-full relative z-10">
+        {/* Top Header bar - Apple Liquid Glass with Specular Rim Light */}
+        <header className="h-14 bg-white/70 dark:bg-[#08090f]/60 backdrop-blur-2xl border-b border-slate-200/80 dark:border-white/[0.08] dark:border-t-white/[0.12] flex items-center justify-between px-3 sm:px-6 flex-shrink-0 z-20 shadow-[0_4px_24px_rgba(0,0,0,0.15)]">
           {/* Left section: Hamburger menu on mobile + Search on desktop */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile Hamburger Menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-800 lg:hidden shrink-0 transition-colors"
+              className="p-2 rounded-xl text-gray-600 dark:text-zinc-300 hover:bg-white/60 dark:hover:bg-white/[0.08] lg:hidden shrink-0 transition-all hover:scale-105 active:scale-95"
               title="Mở menu điều hướng"
             >
               <Menu className="w-5 h-5" />
@@ -195,22 +199,22 @@ export default function Layout() {
               <img
                 src="/artdict-logo.jpg"
                 alt="Logo"
-                className="w-7 h-7 rounded-lg object-cover shadow-sm"
+                className="w-7 h-7 rounded-lg object-cover shadow-md ring-1 ring-white/20"
               />
-              <span className="font-black text-xs tracking-wider text-gray-900 dark:text-gray-100">
+              <span className="font-black text-xs tracking-wider text-gray-900 dark:text-zinc-100">
                 ARTDICT
               </span>
             </div>
 
-            {/* Search - Hidden on small mobile screens to prevent breaking the header */}
+            {/* Search - Pro Studio Liquid Search */}
             <div className="hidden md:flex relative w-48 lg:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="text"
                 placeholder="Tìm dự án, gear, nhân sự..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-gray-100 dark:bg-dark-800 border-0 rounded-lg text-xs lg:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-gray-100 placeholder:text-gray-400"
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-100/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] dark:border-t-white/[0.14] rounded-xl text-xs lg:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/25 focus:border-orange-500/80 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 transition-all shadow-inner"
               />
             </div>
           </div>
@@ -220,52 +224,55 @@ export default function Layout() {
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors text-gray-500 dark:text-gray-400"
+              className="p-2 rounded-xl hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all hover:scale-105 active:scale-95 text-zinc-500 dark:text-zinc-400"
               title={settings.darkMode ? 'Giao diện sáng' : 'Giao diện tối'}
             >
-              {settings.darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {settings.darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500" />}
             </button>
 
             {/* Notifications */}
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors text-gray-500 dark:text-gray-400 relative"
+                className="p-2 rounded-xl hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all hover:scale-105 active:scale-95 text-zinc-500 dark:text-zinc-400 relative"
               >
                 <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gradient-to-r from-orange-500 to-rose-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold shadow-[0_0_10px_rgba(249,115,22,0.6)]">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 card shadow-2xl z-50 max-h-96 overflow-y-auto">
-                  <div className="p-3 border-b border-gray-200 dark:border-dark-700">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Thông báo</h3>
+                <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 card p-0 shadow-2xl z-50 max-h-96 overflow-y-auto">
+                  <div className="p-3 border-b border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Thông báo</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 font-mono font-bold">
+                      {unreadCount} mới
+                    </span>
                   </div>
                   {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-gray-500">
+                    <div className="p-6 text-center text-sm text-zinc-500">
                       Không có thông báo mới
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-100 dark:divide-dark-700">
+                    <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                       {notifications.slice(0, 10).map((n) => (
                         <div
                           key={n.id}
                           onClick={() => markNotificationRead(n.id)}
-                          className={`p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-800 ${
-                            !n.isRead ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''
+                          className={`p-3 cursor-pointer hover:bg-white/60 dark:hover:bg-white/[0.05] transition-colors ${
+                            !n.isRead ? 'bg-orange-500/[0.06] dark:bg-orange-500/[0.08]' : ''
                           }`}
                         >
                           {n.senderName && (
-                            <span className="text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400 block mb-0.5">
+                            <span className="text-[10px] uppercase font-bold text-orange-500 dark:text-orange-400 block mb-0.5">
                               {n.senderName}
                             </span>
                           )}
-                          <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">{n.title}</p>
-                          <p className="text-[11px] text-gray-500 mt-0.5">{n.message}</p>
+                          <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-zinc-100">{n.title}</p>
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">{n.message}</p>
                         </div>
                       ))}
                     </div>
@@ -275,40 +282,43 @@ export default function Layout() {
             </div>
 
             {/* User Profile Info & Logout */}
-            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200/70 dark:border-white/10">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200/70 dark:border-white/[0.08]">
               <button
                 onClick={handleOpenProfileModal}
-                className="flex items-center gap-2 group p-1 -m-1 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 transition-all cursor-pointer text-left"
+                className="flex items-center gap-2 group p-1 -m-1 rounded-xl hover:bg-white/60 dark:hover:bg-white/[0.08] transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-left"
                 title="Bấm để chỉnh sửa hồ sơ & thay avatar của bạn"
               >
-                <Avatar
-                  name={currentUser.name}
-                  avatar={currentAvatar}
-                  size="sm"
-                  className="ring-2 ring-transparent group-hover:ring-primary-500/50"
-                />
+                <div className="relative">
+                  <Avatar
+                    name={currentUser.name}
+                    avatar={currentAvatar}
+                    size="sm"
+                    className="ring-2 ring-transparent group-hover:ring-orange-500/50 shadow-md transition-all"
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#070709] shadow-sm" />
+                </div>
                 <div className="hidden sm:block text-left">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[100px] lg:max-w-[130px] group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-zinc-100 truncate max-w-[100px] lg:max-w-[130px] group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
                       {currentUser.name}
                     </span>
                     {currentUser.role === 'admin' ? (
-                      <span className="badge bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-400 text-[10px] font-bold font-mono">
                         Admin
                       </span>
                     ) : currentUser.role === 'manager' ? (
-                      <span className="badge bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-bold font-mono">
                         Quản lý
                       </span>
                     ) : (
-                      <span className="badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-[10px]">
+                      <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-[10px] font-mono">
                         Nhân viên
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-gray-400 font-mono leading-none flex items-center gap-1">
+                  <div className="text-[10px] text-zinc-400 font-mono leading-none flex items-center gap-1 mt-0.5">
                     <span>@{currentUser.username}</span>
-                    <span className="text-[9px] text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity">✏️ Sửa</span>
+                    <span className="text-[9px] text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">✏️ Sửa</span>
                   </div>
                 </div>
               </button>
@@ -316,7 +326,7 @@ export default function Layout() {
               {/* Logout button */}
               <button
                 onClick={logout}
-                className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors ml-0.5 cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-rose-500/10 text-zinc-400 hover:text-rose-400 transition-all hover:scale-105 active:scale-95 ml-0.5 cursor-pointer"
                 title="Đăng xuất"
               >
                 <LogOut className="w-4 h-4" />

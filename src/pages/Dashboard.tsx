@@ -43,24 +43,33 @@ const CHART_COLORS = [
   '#10b981', '#3b82f6', '#14b8a6', '#ef4444', '#6b7280',
 ];
 
-// ─── Stat Card Component ───
+// ─── Pro Studio Stat Card Component ───
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   sub?: string;
-  color: string; // tailwind bg color class
+  accent: 'orange' | 'amber' | 'rose' | 'emerald' | 'cyan' | 'indigo';
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sub, color }) => (
-  <div className="card flex items-center gap-4 p-5">
-    <div className={`${color} flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white`}>
+const ACCENT_STYLES = {
+  orange: 'from-orange-500/20 to-amber-500/10 text-orange-400 border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.15)]',
+  amber: 'from-amber-500/20 to-yellow-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
+  rose: 'from-rose-500/20 to-pink-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)]',
+  emerald: 'from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+  cyan: 'from-cyan-500/20 to-blue-500/10 text-cyan-400 border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]',
+  indigo: 'from-indigo-500/20 to-purple-500/10 text-indigo-400 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.15)]',
+};
+
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sub, accent }) => (
+  <div className="card group relative flex items-center gap-3.5 p-3.5 sm:p-4 overflow-hidden hover:scale-[1.02] active:scale-[0.98] transition-all cursor-default">
+    <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br border ${ACCENT_STYLES[accent]} transition-transform duration-300 group-hover:scale-110`}>
       {icon}
     </div>
-    <div className="min-w-0">
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
-      {sub && <p className="truncate text-xs text-gray-400 dark:text-gray-500">{sub}</p>}
+    <div className="min-w-0 flex-1">
+      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate">{label}</p>
+      <p className="font-mono text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 mt-0.5 truncate">{value}</p>
+      {sub && <p className="truncate text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 font-mono">{sub}</p>}
     </div>
   </div>
 );
@@ -291,64 +300,64 @@ const Dashboard: React.FC = () => {
       {/* ═══ Stats Cards ═══ */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
-          icon={<FolderOpen size={22} />}
+          icon={<FolderOpen size={20} />}
           label="Dự án đang thực hiện"
           value={activeProjects.length}
           sub={`${projects.length} tổng dự án`}
-          color="bg-indigo-500"
+          accent="indigo"
         />
         <StatCard
-          icon={<Camera size={22} />}
+          icon={<Camera size={20} />}
           label="Lịch quay tuần này"
           value={upcomingShoots.length}
           sub="Sắp tới trong 7 ngày"
-          color="bg-pink-500"
+          accent="rose"
         />
         <StatCard
-          icon={<Users size={22} />}
+          icon={<Users size={20} />}
           label="Thành viên"
           value={activeTeamMembers.length}
           sub={`${teamMembers.length} tổng thành viên`}
-          color="bg-emerald-500"
+          accent="emerald"
         />
         {canViewFinance ? (
           <>
             <StatCard
-              icon={<DollarSign size={22} />}
+              icon={<DollarSign size={20} />}
               label="Doanh thu tháng này"
               value={formatCurrency(revenueThisMonth, settings.currency)}
-              color="bg-amber-500"
+              accent="amber"
             />
             <StatCard
-              icon={<HardDrive size={22} />}
+              icon={<HardDrive size={20} />}
               label="Thiết bị đang dùng"
               value={equipmentInUse.length}
               sub={`${equipment.length} tổng thiết bị`}
-              color="bg-cyan-500"
+              accent="cyan"
             />
             <StatCard
-              icon={<FileText size={22} />}
+              icon={<FileText size={20} />}
               label="Hóa đơn chờ"
               value={pendingInvoices.length}
               sub={pendingInvoices.length > 0 ? formatCurrency(pendingInvoices.reduce((s, i) => s + i.total, 0), settings.currency) : undefined}
-              color="bg-rose-500"
+              accent="orange"
             />
           </>
         ) : (
           <>
             <StatCard
-              icon={<HardDrive size={22} />}
+              icon={<HardDrive size={20} />}
               label="Thiết bị đang dùng"
               value={equipmentInUse.length}
               sub={`${equipment.length} tổng thiết bị`}
-              color="bg-cyan-500"
+              accent="cyan"
             />
             <StatCard
-              icon={<Film size={22} />}
+              icon={<Film size={20} />}
               label="Phản hồi cần sửa"
               value={revisions.filter((r) => r.status === 'Changes Requested').length}
               sub="Revision đang mở"
-              color="bg-amber-500"
+              accent="amber"
             />
           </>
         )}

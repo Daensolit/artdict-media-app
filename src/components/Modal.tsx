@@ -25,13 +25,13 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         className={`modal-content w-full ${sizeClasses[size]}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-dark-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/80 dark:border-white/[0.08]">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-zinc-100 tracking-wide">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors"
+            className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all hover:scale-105 active:scale-95 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5" />
           </button>
         </div>
         <div className="p-6">{children}</div>
