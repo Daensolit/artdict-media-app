@@ -7,6 +7,16 @@ import {
 import { useStore } from '../store/useStore';
 import type { CompanyInfo, Notification } from '../types';
 import { formatCurrency, formatDate, daysUntil } from '../utils/helpers';
+import GlassSelect from '../components/GlassSelect';
+
+const NOTIF_TYPE_OPTIONS = [
+  { value: 'announcement', label: 'Thông báo chung / Tin tức nội bộ', icon: '📢' },
+  { value: 'deadline', label: 'Khẩn cấp / Deadline gấp', icon: '⚠️' },
+  { value: 'reminder', label: 'Lịch quay / Họp chuẩn bị', icon: '⏰' },
+  { value: 'equipment', label: 'Nhắc kiểm tra thiết bị', icon: '📷' },
+  { value: 'payment', label: 'Cập nhật thanh toán dự án', icon: '💰' },
+  { value: 'revision', label: 'Feedback / Revision khách hàng', icon: '🎞️' },
+];
 
 export default function AdminDashboard() {
   const {
@@ -268,32 +278,30 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Loại thông báo</label>
-                  <select
+                  <GlassSelect
                     value={notifType}
-                    onChange={(e) => setNotifType(e.target.value as any)}
-                    className="select w-full"
-                  >
-                    <option value="announcement">📢 Thông báo chung / Tin tức nội bộ</option>
-                    <option value="deadline">⚠️ Khẩn cấp / Deadline gấp</option>
-                    <option value="reminder">⏰ Lịch quay / Họp chuẩn bị</option>
-                    <option value="equipment">📷 Nhắc kiểm tra thiết bị</option>
-                    <option value="payment">💰 Cập nhật thanh toán dự án</option>
-                    <option value="revision">🎞️ Feedback / Revision khách hàng</option>
-                  </select>
+                    onChange={(val) => setNotifType(val as any)}
+                    options={NOTIF_TYPE_OPTIONS}
+                    placeholder="Chọn loại thông báo..."
+                  />
                 </div>
 
                 <div>
                   <label className="label">Gắn với dự án (tùy chọn)</label>
-                  <select
+                  <GlassSelect
                     value={notifProjectId}
-                    onChange={(e) => setNotifProjectId(e.target.value)}
-                    className="select w-full"
-                  >
-                    <option value="">-- Toàn công ty (Không gắn dự án cụ thể) --</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setNotifProjectId(val)}
+                    options={[
+                      { value: '', label: '-- Toàn công ty (Không gắn dự án cụ thể) --', icon: '🏢' },
+                      ...projects.map((p) => ({
+                        value: p.id,
+                        label: p.name,
+                        icon: '🎬',
+                        badge: p.status,
+                      })),
+                    ]}
+                    placeholder="Chọn dự án liên quan..."
+                  />
                 </div>
               </div>
 

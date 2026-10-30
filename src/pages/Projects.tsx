@@ -7,6 +7,7 @@ import {
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
 import Avatar from '../components/Avatar';
+import GlassSelect from '../components/GlassSelect';
 import type { Project, ProjectType, ProjectStatus, Priority, TeamMember } from '../types';
 import {
   formatCurrency, formatDate, formatDateShort, getProjectStatusColor,
@@ -408,52 +409,48 @@ export default function Projects() {
           </div>
 
           {/* Status filter */}
-          <select
+          <GlassSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            {PROJECT_STATUSES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+            onChange={(val) => setStatusFilter(val)}
+            options={[
+              { value: 'all', label: 'Tất cả trạng thái' },
+              ...PROJECT_STATUSES.map((s) => ({ value: s, label: s })),
+            ]}
+            className="w-full sm:w-44"
+          />
 
           {/* Type filter */}
-          <select
+          <GlassSelect
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">Tất cả loại</option>
-            {PROJECT_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+            onChange={(val) => setTypeFilter(val)}
+            options={[
+              { value: 'all', label: 'Tất cả loại' },
+              ...PROJECT_TYPES.map((t) => ({ value: t, label: t })),
+            ]}
+            className="w-full sm:w-40"
+          />
 
           {/* Priority filter */}
-          <select
+          <GlassSelect
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">Tất cả ưu tiên</option>
-            {PRIORITIES.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
+            onChange={(val) => setPriorityFilter(val)}
+            options={[
+              { value: 'all', label: 'Tất cả ưu tiên' },
+              ...PRIORITIES.map((p) => ({ value: p, label: p })),
+            ]}
+            className="w-full sm:w-36"
+          />
 
           {/* Manager filter */}
-          <select
+          <GlassSelect
             value={managerFilter}
-            onChange={(e) => setManagerFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">Tất cả quản lý</option>
-            {teamMembers.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
+            onChange={(val) => setManagerFilter(val)}
+            options={[
+              { value: 'all', label: 'Tất cả quản lý' },
+              ...teamMembers.map((m) => ({ value: m.id, label: m.name })),
+            ]}
+            className="w-full sm:w-44"
+          />
 
           {/* View toggle */}
           <div className="flex items-center border border-slate-200/80 dark:border-white/[0.08] rounded-xl overflow-hidden bg-slate-100/50 dark:bg-white/[0.03]">
