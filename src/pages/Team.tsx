@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   Users,
   UserPlus,
@@ -18,9 +18,12 @@ import {
   AlertTriangle,
   Star,
   Activity,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 import type { TeamMember, TeamRole } from '../types';
 import {
   generateId,
@@ -31,6 +34,7 @@ import {
   matchesSearch,
   getProjectStatusColor,
   getEquipmentStatusColor,
+  compressAvatarImage,
 } from '../utils/helpers';
 
 const ROLE_OPTIONS: TeamRole[] = [
@@ -73,6 +77,7 @@ interface MemberFormData {
   email: string;
   phone: string;
   skills: string;
+  avatar: string;
   projectRate: string;
   isActive: boolean;
 }
@@ -83,6 +88,7 @@ const emptyForm: MemberFormData = {
   email: '',
   phone: '',
   skills: '',
+  avatar: '',
   projectRate: '',
   isActive: true,
 };
@@ -112,6 +118,9 @@ export default function Team() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
   const [formData, setFormData] = useState<MemberFormData>(emptyForm);
+  const [isCompressingAvatar, setIsCompressingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const teamAvatarFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Helpers to compute relations
   const getAssignedProjects = (memberId: string) =>
@@ -158,6 +167,7 @@ export default function Team() {
   const openAddModal = () => {
     setEditingMember(null);
     setFormData(emptyForm);
+    setAvatarError('');
     setIsFormModalOpen(true);
   };
 
@@ -169,10 +179,36 @@ export default function Team() {
       email: member.email,
       phone: member.phone,
       skills: member.skills.join(', '),
+      avatar: member.avatar || '',
       projectRate: String(member.projectRate || member.hourlyRate || 0),
       isActive: member.isActive,
     });
+    setAvatarError('');
     setIsFormModalOpen(true);
+  };
+
+  const handleTeamAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Vui lòng chọn file hình ảnh (JPG, PNG, WebP...)');
+      return;
+    }
+
+    try {
+      setIsCompressingAvatar(true);
+      setAvatarError('');
+      const compressed = await compressAvatarImage(file);
+      setFormData((prev) => ({ ...prev, avatar: compressed }));
+    } catch (err: any) {
+      setAvatarError(err?.message || 'Lỗi khi nén ảnh');
+    } finally {
+      setIsCompressingAvatar(false);
+      if (teamAvatarFileInputRef.current) {
+        teamAvatarFileInputRef.current.value = '';
+      }
+    }
   };
 
   const openDeleteModal = (member: TeamMember) => {
@@ -193,12 +229,15 @@ export default function Team() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const finalAvatar = formData.avatar || (editingMember ? editingMember.avatar : '') || getInitials(formData.name.trim());
+
     if (editingMember) {
       updateTeamMember(editingMember.id, {
         name: formData.name,
         role: formData.role,
         email: formData.email,
         phone: formData.phone,
+        avatar: finalAvatar,
         skills: skillsArray,
         projectRate: Number(formData.projectRate) || 0,
         isActive: formData.isActive,
@@ -210,7 +249,7 @@ export default function Team() {
         role: formData.role,
         email: formData.email,
         phone: formData.phone,
-        avatar: '',
+        avatar: finalAvatar,
         skills: skillsArray,
         projectRate: Number(formData.projectRate) || 0,
         isActive: formData.isActive,
@@ -266,13 +305,12 @@ export default function Team() {
         <div className="card p-6">
           <div className="flex flex-col sm:flex-row items-start gap-6">
             {/* Avatar */}
-            <div
-              className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ${getAvatarColor(
-                selectedMember.name
-              )}`}
-            >
-              {getInitials(selectedMember.name)}
-            </div>
+            <Avatar
+              name={selectedMember.name}
+              avatar={selectedMember.avatar}
+              size="xl"
+              className="ring-4 ring-white dark:ring-dark-800 shadow-md"
+            />
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
@@ -483,6 +521,71 @@ export default function Team() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Avatar Upload */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10">
+            <input
+              type="file"
+              ref={teamAvatarFileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleTeamAvatarUpload}
+            />
+
+            <div
+              className="relative group/avatar cursor-pointer"
+              onClick={() => teamAvatarFileInputRef.current?.click()}
+              title="Nhấn để tải hoặc đổi ảnh đại diện"
+            >
+              <Avatar
+                name={formData.name || 'Member'}
+                avatar={formData.avatar}
+                size="xl"
+                className="ring-4 ring-white dark:ring-dark-800 shadow-lg"
+              />
+              <div className="absolute inset-0 bg-black/45 rounded-full flex flex-col items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                <Camera className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px] font-semibold">Đổi ảnh</span>
+              </div>
+            </div>
+
+            <div className="flex-1 text-center sm:text-left space-y-2">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Ảnh đại diện thành viên
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Nén tự động WebP (~20KB) siêu nhẹ, sắc nét và an toàn cho hệ thống.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <button
+                  type="button"
+                  onClick={() => teamAvatarFileInputRef.current?.click()}
+                  disabled={isCompressingAvatar}
+                  className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {isCompressingAvatar ? 'Đang nén ảnh...' : 'Tải ảnh từ máy'}
+                </button>
+                {formData.avatar && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, avatar: '' }))}
+                    className="text-xs py-1.5 px-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Xóa ảnh
+                  </button>
+                )}
+              </div>
+
+              {avatarError && (
+                <p className="text-xs text-red-500 font-medium">{avatarError}</p>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Name */}
             <div>
@@ -836,13 +939,7 @@ export default function Team() {
               >
                 {/* Top: Avatar + Name + Actions */}
                 <div className="flex items-start gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ${getAvatarColor(
-                      member.name
-                    )}`}
-                  >
-                    {getInitials(member.name)}
-                  </div>
+                  <Avatar name={member.name} avatar={member.avatar} size="lg" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">

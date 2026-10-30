@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 import type { PostProductionTask, PostProductionStep } from '../types';
 import {
   formatDate,
@@ -488,11 +489,7 @@ export default function PostProduction() {
                           {/* Person */}
                           {member ? (
                             <div className="flex items-center gap-1.5">
-                              <div
-                                className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${getAvatarColor(member.name)}`}
-                              >
-                                {getInitials(member.name)}
-                              </div>
+                              <Avatar name={member.name} avatar={member.avatar} size="xs" className="w-5 h-5 text-[9px]" />
                               <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[80px]">
                                 {member.name}
                               </span>

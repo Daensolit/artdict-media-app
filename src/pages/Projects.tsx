@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 import type { Project, ProjectType, ProjectStatus, Priority, TeamMember } from '../types';
 import {
   formatCurrency, formatDate, formatDateShort, getProjectStatusColor,
@@ -356,16 +357,12 @@ export default function Projects() {
     return (
       <div className="flex -space-x-2">
         {shown.map((m) => (
-          <div
-            key={m.id}
-            title={m.name}
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white ring-2 ring-white dark:ring-dark-800 ${getAvatarColor(m.name)}`}
-          >
-            {getInitials(m.name)}
+          <div key={m.id} title={m.name} className="ring-2 ring-white dark:ring-dark-800 rounded-full">
+            <Avatar name={m.name} avatar={m.avatar} size="xs" />
           </div>
         ))}
         {remaining > 0 && (
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-300 ring-2 ring-white dark:ring-dark-800">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-300 ring-2 ring-white dark:ring-dark-800">
             +{remaining}
           </div>
         )}
@@ -991,11 +988,7 @@ export default function Projects() {
                         onChange={() => toggleTeamMember(member.id)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white ${getAvatarColor(member.name)}`}
-                      >
-                        {getInitials(member.name)}
-                      </div>
+                      <Avatar name={member.name} avatar={member.avatar} size="xs" />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{member.name}</p>
                         <p className="text-xs text-gray-400 truncate">{member.role}</p>
@@ -1172,11 +1165,7 @@ function ProjectDetailSection({ project, getClientName, getManagerName, getTeamM
                 key={m.id}
                 className="flex items-center gap-2 bg-white dark:bg-dark-700 border border-gray-200 dark:border-dark-600 rounded-lg px-2.5 py-1.5"
               >
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white ${getAvatarColor(m.name)}`}
-                >
-                  {getInitials(m.name)}
-                </div>
+                <Avatar name={m.name} avatar={m.avatar} size="xs" />
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{m.name}</p>
                   <p className="text-xs text-gray-400">{m.role}</p>

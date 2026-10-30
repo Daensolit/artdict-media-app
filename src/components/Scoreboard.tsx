@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Trophy, Award, Flame, DollarSign, Briefcase, Film, Crown, Medal } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { formatCurrency, getAvatarColor, getInitials } from '../utils/helpers';
+import Avatar from './Avatar';
+import { formatCurrency } from '../utils/helpers';
 
 export default function Scoreboard() {
   const { teamMembers, projects } = useStore();
@@ -144,13 +145,7 @@ export default function Scoreboard() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {getRankBadge(idx)}
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${getAvatarColor(
-                        item.member.name
-                      )}`}
-                    >
-                      {getInitials(item.member.name)}
-                    </div>
+                    <Avatar name={item.member.name} avatar={item.member.avatar} size="sm" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                         {item.member.name}
@@ -199,13 +194,7 @@ export default function Scoreboard() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {getRankBadge(idx)}
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${getAvatarColor(
-                        item.member.name
-                      )}`}
-                    >
-                      {getInitials(item.member.name)}
-                    </div>
+                    <Avatar name={item.member.name} avatar={item.member.avatar} size="sm" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                         {item.member.name}
@@ -253,13 +242,7 @@ export default function Scoreboard() {
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {getRankBadge(idx)}
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${getAvatarColor(
-                        item.member.name
-                      )}`}
-                    >
-                      {getInitials(item.member.name)}
-                    </div>
+                    <Avatar name={item.member.name} avatar={item.member.avatar} size="sm" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                         {item.member.name}

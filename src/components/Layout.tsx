@@ -1,11 +1,12 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useStore } from '../store/useStore';
-import { Bell, Search, Moon, Sun, LogOut, Menu, UserCheck, Sparkles, Phone, Mail, Edit3 } from 'lucide-react';
-import { useState } from 'react';
+import { Bell, Search, Moon, Sun, LogOut, Menu, UserCheck, Sparkles, Phone, Mail, Edit3, Camera, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
 import Login from '../pages/Login';
 import Modal from './Modal';
-import { getAvatarColor, getInitials, generateId } from '../utils/helpers';
+import Avatar from './Avatar';
+import { getAvatarColor, getInitials, generateId, compressAvatarImage } from '../utils/helpers';
 import type { TeamRole } from '../types';
 
 const ROLE_OPTIONS: TeamRole[] = [
@@ -22,6 +23,7 @@ export default function Layout() {
     markNotificationRead,
     currentUser,
     logout,
+    updateUser,
     teamMembers,
     addTeamMember,
     updateTeamMember,
@@ -37,10 +39,20 @@ export default function Layout() {
   const [profilePhone, setProfilePhone] = useState('');
   const [profileEmail, setProfileEmail] = useState('');
   const [profileSkills, setProfileSkills] = useState('');
+  const [profileAvatar, setProfileAvatar] = useState('');
+  const [isCompressingAvatar, setIsCompressingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
   const [profileSaved, setProfileSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const navigate = useNavigate();
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // Thành viên tương ứng của user hiện tại
+  const currentMember = teamMembers.find(
+    (m) => m.id === currentUser?.teamMemberId || m.name.toLowerCase() === currentUser?.name.toLowerCase()
+  );
+  const currentAvatar = currentMember?.avatar || currentUser?.avatar || '';
 
   const toggleDarkMode = () => {
     const newDark = !settings.darkMode;
@@ -64,8 +76,35 @@ export default function Layout() {
     setProfilePhone(member?.phone || '');
     setProfileEmail(member?.email || '');
     setProfileSkills(member?.skills ? member.skills.join(', ') : '');
+    setProfileAvatar(member?.avatar || currentUser.avatar || '');
+    setAvatarError('');
     setProfileSaved(false);
     setIsProfileModalOpen(true);
+  };
+
+  // Chọn ảnh avatar và nén tự động
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Vui lòng chọn tệp hình ảnh hợp lệ (PNG, JPG, WebP...).');
+      return;
+    }
+
+    try {
+      setIsCompressingAvatar(true);
+      setAvatarError('');
+      const compressed = await compressAvatarImage(file);
+      setProfileAvatar(compressed);
+    } catch (err: any) {
+      setAvatarError(err?.message || 'Lỗi khi xử lý hình ảnh');
+    } finally {
+      setIsCompressingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   // Lưu hồ sơ nhân sự
@@ -82,12 +121,15 @@ export default function Layout() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const finalAvatar = profileAvatar || getInitials(profileName.trim());
+
     if (existingMember) {
       updateTeamMember(existingMember.id, {
         name: profileName.trim(),
         role: profileRole,
         phone: profilePhone.trim(),
         email: profileEmail.trim(),
+        avatar: finalAvatar,
         skills: skillsArray,
       });
     } else {
@@ -98,13 +140,20 @@ export default function Layout() {
         role: profileRole,
         phone: profilePhone.trim(),
         email: profileEmail.trim(),
-        avatar: getInitials(profileName.trim()),
+        avatar: finalAvatar,
         skills: skillsArray,
         projectRate: 0,
         isActive: true,
         createdAt: new Date().toISOString(),
       });
     }
+
+    // Cập nhật cả User state để đồng bộ tức thì trên header
+    updateUser(currentUser.id, {
+      name: profileName.trim(),
+      avatar: finalAvatar,
+      teamMemberId: existingMember?.id || currentUser.teamMemberId,
+    });
 
     setProfileSaved(true);
     setTimeout(() => {
@@ -230,15 +279,14 @@ export default function Layout() {
               <button
                 onClick={handleOpenProfileModal}
                 className="flex items-center gap-2 group p-1 -m-1 rounded-xl hover:bg-white/60 dark:hover:bg-white/10 transition-all cursor-pointer text-left"
-                title="Bấm để chỉnh sửa hồ sơ nhân sự của bạn"
+                title="Bấm để chỉnh sửa hồ sơ & thay avatar của bạn"
               >
-                <div
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-transparent group-hover:ring-primary-500/50 shrink-0 transition-all ${getAvatarColor(
-                    currentUser.name
-                  )}`}
-                >
-                  {getInitials(currentUser.name)}
-                </div>
+                <Avatar
+                  name={currentUser.name}
+                  avatar={currentAvatar}
+                  size="sm"
+                  className="ring-2 ring-transparent group-hover:ring-primary-500/50"
+                />
                 <div className="hidden sm:block text-left">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[100px] lg:max-w-[130px] group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
@@ -287,10 +335,75 @@ export default function Layout() {
       <Modal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
-        title="Hồ sơ nhân sự của bạn"
+        title="Hồ sơ cá nhân & Ảnh đại diện"
         size="md"
       >
         <form onSubmit={handleSaveProfile} className="space-y-4">
+          {/* Avatar Upload Box */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarFileChange}
+            />
+
+            <div
+              className="relative group/avatar cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+              title="Nhấn để đổi ảnh đại diện"
+            >
+              <Avatar
+                name={profileName || currentUser.name}
+                avatar={profileAvatar}
+                size="xl"
+                className="ring-4 ring-white dark:ring-dark-800 shadow-lg"
+              />
+              <div className="absolute inset-0 bg-black/45 rounded-full flex flex-col items-center justify-center text-white opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                <Camera className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px] font-semibold">Đổi ảnh</span>
+              </div>
+            </div>
+
+            <div className="flex-1 text-center sm:text-left space-y-2">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Ảnh đại diện nhân sự
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Tự động nén thông minh (~20KB WebP) sắc nét, tuyệt đối an toàn và không làm đầy cơ sở dữ liệu.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isCompressingAvatar}
+                  className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {isCompressingAvatar ? 'Đang nén ảnh...' : 'Tải ảnh từ máy'}
+                </button>
+                {profileAvatar && (
+                  <button
+                    type="button"
+                    onClick={() => setProfileAvatar('')}
+                    className="text-xs py-1.5 px-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Xóa ảnh (dùng chữ cái)
+                  </button>
+                )}
+              </div>
+
+              {avatarError && (
+                <p className="text-xs text-red-500 font-medium">{avatarError}</p>
+              )}
+            </div>
+          </div>
+
           <div className="p-3 bg-primary-50/50 dark:bg-primary-950/20 border border-primary-200/60 dark:border-primary-800/40 rounded-xl text-xs text-primary-800 dark:text-primary-300">
             💡 Bạn có thể tự cập nhật họ tên, vai trò chuyên môn, số điện thoại, email và kỹ năng của mình để xuất hiện chính xác trong Call Sheet và danh bạ team.
           </div>

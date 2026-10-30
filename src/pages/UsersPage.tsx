@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, ShieldAlert, UserPlus, Lock, Check, X, Key, Trash2, Edit2, AlertCircle, Shield } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
 import type { User, UserRole, UserPermissions } from '../types';
 import { generateId, getAvatarColor, getInitials } from '../utils/helpers';
 
@@ -238,19 +239,14 @@ export default function UsersPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-dark-800">
               {users.map((u) => {
                 const isDaensolit = u.username === 'daensolit' || u.isProtected;
+                const memberAvatar = teamMembers.find((m) => m.id === u.teamMemberId || m.name.toLowerCase() === u.name.toLowerCase())?.avatar || u.avatar;
 
                 return (
                   <tr key={u.id} className="hover:bg-gray-50/60 dark:hover:bg-dark-800/40 transition-colors">
                     {/* User info */}
                     <td className="table-cell">
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm ${getAvatarColor(
-                            u.name
-                          )}`}
-                        >
-                          {getInitials(u.name)}
-                        </div>
+                        <Avatar name={u.name} avatar={memberAvatar} size="sm" />
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-gray-900 dark:text-gray-100">{u.name}</span>

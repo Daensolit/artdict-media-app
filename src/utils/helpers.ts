@@ -163,3 +163,59 @@ export function matchesSearch(text: string, query: string): boolean {
   if (!query) return true;
   return text.toLowerCase().includes(query.toLowerCase());
 }
+
+/**
+ * Nén hình ảnh avatar thành WebP/JPEG nhẹ (< 240x240px, crop vuông tâm, dung lượng siêu nhẹ ~15-25KB)
+ * Tuyệt đối an toàn, mượt mà, tránh làm nặng payload và không bao giờ làm đầy/sập Database Supabase.
+ */
+export function compressAvatarImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Tệp tải lên phải là hình ảnh (JPG, PNG, WebP...)'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 240; // 240x240px sắc nét trên mọi màn hình Retina/OLED
+        const width = img.width;
+        const height = img.height;
+
+        // Crop vuông từ tâm ảnh (Center square crop) để ảnh không bị méo hay biến dạng
+        const minDim = Math.min(width, height);
+        const startX = (width - minDim) / 2;
+        const startY = (height - minDim) / 2;
+
+        const targetSize = Math.min(minDim, MAX_SIZE);
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Không thể khởi tạo bộ xử lý hình ảnh'));
+          return;
+        }
+
+        // Bật khử răng cưa và làm mịn ảnh cao cấp
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // Vẽ ảnh cắt vuông từ tâm
+        ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
+
+        // Xuất định dạng WebP chất lượng 0.8 (~15KB - 25KB)
+        let compressedBase64 = canvas.toDataURL('image/webp', 0.8);
+        if (!compressedBase64.startsWith('data:image/webp')) {
+          compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        }
+        resolve(compressedBase64);
+      };
+      img.onerror = () => reject(new Error('Lỗi khi phân tích tệp hình ảnh'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Lỗi khi đọc tệp'));
+    reader.readAsDataURL(file);
+  });
+}

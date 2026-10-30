@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Scoreboard from '../components/Scoreboard';
+import Avatar from '../components/Avatar';
 import {
   formatCurrency,
   formatDate,
@@ -651,12 +652,8 @@ const Dashboard: React.FC = () => {
                     {/* Team member avatars */}
                     <div className="flex -space-x-2">
                       {members.slice(0, 4).map((m) => (
-                        <div
-                          key={m.id}
-                          className={`${getAvatarColor(m.name)} flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white dark:border-gray-800`}
-                          title={m.name}
-                        >
-                          {getInitials(m.name)}
+                        <div key={m.id} title={m.name} className="border-2 border-white dark:border-gray-800 rounded-full">
+                          <Avatar name={m.name} avatar={m.avatar} size="xs" />
                         </div>
                       ))}
                       {members.length > 4 && (

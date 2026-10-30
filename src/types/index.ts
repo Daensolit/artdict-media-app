@@ -82,7 +82,7 @@ export interface TeamMember {
   role: TeamRole;
   email: string;
   phone: string;
-  avatar: string; // Initials or color
+  avatar: string; // Initials, color, or compressed base64 image URL
   skills: string[];
   projectRate: number; // Thù lao theo từng dự án (VND / project)
   hourlyRate?: number; // Tùy chọn tương thích ngược
@@ -267,6 +267,7 @@ export interface User {
   permissions: UserPermissions;
   isProtected?: boolean; // Riêng tài khoản daensolit không thể bị xóa hoặc sửa phân quyền
   isActive: boolean;
+  avatar?: string; // compressed base64 avatar URL or initials
   teamMemberId?: string; // Liên kết tới thành viên trong team
   createdAt: string;
 }
