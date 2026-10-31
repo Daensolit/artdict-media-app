@@ -344,7 +344,7 @@ export default function Projects() {
     const days = daysUntil(deadline);
     if (days < 0) return <span className="text-red-500 text-xs font-medium">Quá hạn {Math.abs(days)} ngày</span>;
     if (days === 0) return <span className="text-red-500 text-xs font-medium">Hôm nay</span>;
-    if (days <= 3) return <span className="text-orange-500 text-xs font-medium">Còn {days} ngày</span>;
+    if (days <= 5) return <span className="text-orange-500 text-xs font-medium">Còn {days} ngày (Gấp)</span>;
     if (days <= 7) return <span className="text-amber-500 text-xs font-medium">Còn {days} ngày</span>;
     return <span className="text-gray-400 text-xs">Còn {days} ngày</span>;
   };
@@ -764,17 +764,18 @@ export default function Projects() {
                   />
                 </div>
               ) : (
-                <select
+                <GlassSelect
                   value={formData.clientId}
-                  onChange={(e) => setFormData((p) => ({ ...p, clientId: e.target.value }))}
-                  className="select w-full"
-                  required
-                >
-                  <option value="">Chọn khách hàng</option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}{c.company ? ` (${c.company})` : ''}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData((p) => ({ ...p, clientId: val }))}
+                  placeholder="Chọn khách hàng"
+                  options={[
+                    { value: '', label: 'Chọn khách hàng' },
+                    ...clients.map((c) => ({
+                      value: c.id,
+                      label: `${c.name}${c.company ? ` (${c.company})` : ''}`,
+                    })),
+                  ]}
+                />
               )}
             </div>
           </div>
@@ -785,55 +786,45 @@ export default function Projects() {
               <UserCheck className="w-4 h-4 text-primary-600" />
               <span>Người quản lý job (Job Lead / PM)</span>
             </label>
-            <select
+            <GlassSelect
               value={formData.managerId}
-              onChange={(e) => setFormData((p) => ({ ...p, managerId: e.target.value }))}
-              className="select w-full"
-            >
-              <option value="">-- Chưa chỉ định người quản lý --</option>
-              {teamMembers.map((m) => (
-                <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
-              ))}
-            </select>
+              onChange={(val) => setFormData((p) => ({ ...p, managerId: val }))}
+              placeholder="-- Chưa chỉ định người quản lý --"
+              options={[
+                { value: '', label: '-- Chưa chỉ định người quản lý --' },
+                ...teamMembers.map((m) => ({
+                  value: m.id,
+                  label: `${m.name} (${m.role})`,
+                })),
+              ]}
+            />
           </div>
 
           {/* Row 2: Type, Status, Priority */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="label">Loại dự án</label>
-              <select
+              <GlassSelect
                 value={formData.type}
-                onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value as ProjectType }))}
-                className="select w-full"
-              >
-                {PROJECT_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData((p) => ({ ...p, type: val as ProjectType }))}
+                options={PROJECT_TYPES}
+              />
             </div>
             <div>
               <label className="label">Trạng thái</label>
-              <select
+              <GlassSelect
                 value={formData.status}
-                onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value as ProjectStatus }))}
-                className="select w-full"
-              >
-                {PROJECT_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData((p) => ({ ...p, status: val as ProjectStatus }))}
+                options={PROJECT_STATUSES}
+              />
             </div>
             <div>
               <label className="label">Ưu tiên</label>
-              <select
+              <GlassSelect
                 value={formData.priority}
-                onChange={(e) => setFormData((p) => ({ ...p, priority: e.target.value as Priority }))}
-                className="select w-full"
-              >
-                {PRIORITIES.map((pr) => (
-                  <option key={pr} value={pr}>{pr}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData((p) => ({ ...p, priority: val as Priority }))}
+                options={PRIORITIES}
+              />
             </div>
           </div>
 
@@ -1114,7 +1105,7 @@ function ProjectDetailSection({ project, getClientName, getManagerName, getTeamM
               {(() => {
                 const days = daysUntil(project.deadline);
                 if (days < 0) return <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Quá hạn</span>;
-                if (days <= 3) return <span className="badge bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Gấp</span>;
+                if (days <= 5) return <span className="badge bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Gấp (&le; 5 ngày)</span>;
                 return null;
               })()}
             </div>

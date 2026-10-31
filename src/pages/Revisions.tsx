@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import GlassSelect from '../components/GlassSelect';
 import type { Revision, RevisionStatus, RevisionTimestamp } from '../types';
 import {
   generateId,
@@ -345,30 +346,26 @@ export default function Revisions() {
               className="input pl-10 w-full"
             />
           </div>
-          <select
+          <GlassSelect
+            className="min-w-[200px]"
             value={filterProject}
-            onChange={(e) => setFilterProject(e.target.value)}
-            className="select min-w-[200px]"
-          >
-            <option value="">Tất cả dự án</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <select
+            onChange={setFilterProject}
+            placeholder="Tất cả dự án"
+            options={[
+              { value: '', label: 'Tất cả dự án' },
+              ...projects.map((p) => ({ value: p.id, label: p.name })),
+            ]}
+          />
+          <GlassSelect
+            className="min-w-[180px]"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="select min-w-[180px]"
-          >
-            <option value="">Tất cả trạng thái</option>
-            {REVISION_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={setFilterStatus}
+            placeholder="Tất cả trạng thái"
+            options={[
+              { value: '', label: 'Tất cả trạng thái' },
+              ...REVISION_STATUSES.map((s) => ({ value: s, label: s })),
+            ]}
+          />
         </div>
       </div>
 
@@ -635,18 +632,15 @@ export default function Revisions() {
           {/* Project Select */}
           <div>
             <label className="label">Dự án *</label>
-            <select
+            <GlassSelect
               value={formData.projectId}
-              onChange={(e) => handleProjectChange(e.target.value)}
-              className="select w-full"
-            >
-              <option value="">Chọn dự án...</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              onChange={handleProjectChange}
+              placeholder="Chọn dự án..."
+              options={[
+                { value: '', label: 'Chọn dự án...' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -702,22 +696,16 @@ export default function Revisions() {
           {/* Status */}
           <div>
             <label className="label">Trạng thái</label>
-            <select
+            <GlassSelect
               value={formData.status}
-              onChange={(e) =>
+              onChange={(val) =>
                 setFormData((prev) => ({
                   ...prev,
-                  status: e.target.value as RevisionStatus,
+                  status: val as RevisionStatus,
                 }))
               }
-              className="select w-full"
-            >
-              {REVISION_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              options={REVISION_STATUSES}
+            />
           </div>
 
           {/* Feedback */}

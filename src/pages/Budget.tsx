@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import GlassSelect from '../components/GlassSelect';
 import {
   formatCurrency,
   formatDate,
@@ -638,33 +639,27 @@ export default function Budget() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div>
                   <label className="label">Dự án</label>
-                  <select
-                    className="select w-full"
+                  <GlassSelect
                     value={filterProject}
-                    onChange={(e) => setFilterProject(e.target.value)}
-                  >
-                    <option value="">Tất cả</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setFilterProject}
+                    placeholder="Tất cả"
+                    options={[
+                      { value: '', label: 'Tất cả' },
+                      ...projects.map((p) => ({ value: p.id, label: p.name })),
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="label">Hạng mục</label>
-                  <select
-                    className="select w-full"
+                  <GlassSelect
                     value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value)}
-                  >
-                    <option value="">Tất cả</option>
-                    {EXPENSE_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setFilterCategory}
+                    placeholder="Tất cả"
+                    options={[
+                      { value: '', label: 'Tất cả' },
+                      ...EXPENSE_CATEGORIES.map((cat) => ({ value: cat, label: cat })),
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="label">Từ ngày</label>
@@ -874,19 +869,15 @@ export default function Budget() {
               <label className="label">
                 Dự án <span className="text-red-500">*</span>
               </label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.projectId}
-                onChange={(e) => setForm({ ...form, projectId: e.target.value })}
-                required
-              >
-                <option value="">Chọn dự án</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setForm({ ...form, projectId: val })}
+                placeholder="Chọn dự án"
+                options={[
+                  { value: '', label: 'Chọn dự án' },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
 
             {/* Category */}
@@ -894,20 +885,13 @@ export default function Budget() {
               <label className="label">
                 Hạng mục <span className="text-red-500">*</span>
               </label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.category}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value as ExpenseCategory })
+                onChange={(val) =>
+                  setForm({ ...form, category: val as ExpenseCategory })
                 }
-                required
-              >
-                {EXPENSE_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                options={EXPENSE_CATEGORIES}
+              />
             </div>
 
             {/* Description */}
@@ -958,20 +942,20 @@ export default function Budget() {
             {/* Paid By */}
             <div>
               <label className="label">Người thanh toán</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.paidById}
-                onChange={(e) => setForm({ ...form, paidById: e.target.value })}
-              >
-                <option value="">Chọn thành viên</option>
-                {teamMembers
-                  .filter((m) => m.isActive)
-                  .map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} — {m.role}
-                    </option>
-                  ))}
-              </select>
+                onChange={(val) => setForm({ ...form, paidById: val })}
+                placeholder="Chọn thành viên"
+                options={[
+                  { value: '', label: 'Chọn thành viên' },
+                  ...teamMembers
+                    .filter((m) => m.isActive)
+                    .map((m) => ({
+                      value: m.id,
+                      label: `${m.name} — ${m.role}`,
+                    })),
+                ]}
+              />
             </div>
 
             {/* Receipt */}

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import GlassSelect from '../components/GlassSelect';
 import type { CompanyInfo } from '../types';
 
 export default function Settings() {
@@ -380,15 +381,15 @@ export default function Settings() {
             </div>
             <div>
               <label className="label">Đơn vị tiền tệ</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={settings.currency}
-                onChange={(e) => handleCurrency(e.target.value)}
-              >
-                <option value="VND">VND - Việt Nam Đồng</option>
-                <option value="USD">USD - US Dollar</option>
-                <option value="EUR">EUR - Euro</option>
-              </select>
+                onChange={handleCurrency}
+                options={[
+                  { value: 'VND', label: 'VND - Việt Nam Đồng' },
+                  { value: 'USD', label: 'USD - US Dollar' },
+                  { value: 'EUR', label: 'EUR - Euro' },
+                ]}
+              />
             </div>
           </div>
         </div>

@@ -17,6 +17,7 @@ import {
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
 import Avatar from '../components/Avatar';
+import GlassSelect from '../components/GlassSelect';
 import type { PostProductionTask, PostProductionStep } from '../types';
 import {
   formatDate,
@@ -271,42 +272,39 @@ export default function PostProduction() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="label">Dự án</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={filterProjectId}
-                onChange={(e) => setFilterProjectId(e.target.value)}
-              >
-                <option value="">Tất cả dự án</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+                onChange={setFilterProjectId}
+                placeholder="Tất cả dự án"
+                options={[
+                  { value: '', label: 'Tất cả dự án' },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
             <div>
               <label className="label">Người thực hiện</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={filterAssignedToId}
-                onChange={(e) => setFilterAssignedToId(e.target.value)}
-              >
-                <option value="">Tất cả</option>
-                {teamMembers.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </select>
+                onChange={setFilterAssignedToId}
+                placeholder="Tất cả"
+                options={[
+                  { value: '', label: 'Tất cả' },
+                  ...teamMembers.map((m) => ({ value: m.id, label: m.name })),
+                ]}
+              />
             </div>
             <div>
               <label className="label">Trạng thái</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
-                <option value="">Tất cả</option>
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
+                onChange={setFilterStatus}
+                placeholder="Tất cả"
+                options={[
+                  { value: '', label: 'Tất cả' },
+                  ...STATUS_OPTIONS,
+                ]}
+              />
             </div>
           </div>
           {activeFiltersCount > 0 && (
@@ -573,68 +571,58 @@ export default function PostProduction() {
             {/* Project */}
             <div>
               <label className="label">Dự án <span className="text-red-400">*</span></label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={formData.projectId}
-                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                required
-              >
-                <option value="">Chọn dự án</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, projectId: val })}
+                placeholder="Chọn dự án"
+                options={[
+                  { value: '', label: 'Chọn dự án' },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
 
             {/* Step */}
             <div>
               <label className="label">Bước sản xuất <span className="text-red-400">*</span></label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={formData.step}
-                onChange={(e) => setFormData({ ...formData, step: e.target.value as PostProductionStep })}
-                required
-              >
-                {ALL_STEPS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, step: val as PostProductionStep })}
+                options={ALL_STEPS}
+              />
             </div>
 
             {/* Assigned To */}
             <div>
               <label className="label">Người thực hiện <span className="text-red-400">*</span></label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={formData.assignedToId}
-                onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
-                required
-              >
-                <option value="">Chọn thành viên</option>
-                {teamMembers.filter((m) => m.isActive).map((m) => (
-                  <option key={m.id} value={m.id}>{m.name} - {m.role}</option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, assignedToId: val })}
+                placeholder="Chọn thành viên"
+                options={[
+                  { value: '', label: 'Chọn thành viên' },
+                  ...teamMembers.filter((m) => m.isActive).map((m) => ({
+                    value: m.id,
+                    label: `${m.name} - ${m.role}`,
+                  })),
+                ]}
+              />
             </div>
 
             {/* Status */}
             <div>
               <label className="label">Trạng thái</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={formData.status}
-                onChange={(e) =>
+                onChange={(val) =>
                   setFormData({
                     ...formData,
-                    status: e.target.value as PostProductionTask['status'],
-                    progress: e.target.value === 'completed' ? 100 : formData.progress,
+                    status: val as PostProductionTask['status'],
+                    progress: val === 'completed' ? 100 : formData.progress,
                   })
                 }
-              >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
+                options={STATUS_OPTIONS}
+              />
             </div>
 
             {/* Deadline */}

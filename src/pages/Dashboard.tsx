@@ -207,14 +207,14 @@ const Dashboard: React.FC = () => {
       }
     });
 
-    // Deadlines approaching within 3 days
+    // Deadlines approaching within 5 days
     activeProjects.forEach((p) => {
       const d = daysUntil(p.deadline);
-      if (d >= 0 && d <= 3) {
+      if (d >= 0 && d <= 5) {
         items.push({
           type: 'deadline',
           message: `Dự án "${p.name}" sắp đến hạn (${d === 0 ? 'hôm nay' : `còn ${d} ngày`})`,
-          severity: d <= 1 ? 'danger' : 'warning',
+          severity: d <= 2 ? 'danger' : 'warning',
         });
       }
     });
@@ -230,7 +230,7 @@ const Dashboard: React.FC = () => {
         });
       } else if (inv.paymentStatus !== 'Paid') {
         const d = daysUntil(inv.dueDate);
-        if (d >= 0 && d <= 3) {
+        if (d >= 0 && d <= 5) {
           items.push({
             type: 'invoice',
             message: `Hóa đơn #${inv.invoiceNumber} sắp đến hạn (${d === 0 ? 'hôm nay' : `còn ${d} ngày`})`,
@@ -648,7 +648,7 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
                         {client && <span>{client.name}</span>}
-                        <span className={`flex items-center gap-1 ${deadline <= 3 && deadline >= 0 ? 'font-semibold text-red-500' : ''}`}>
+                        <span className={`flex items-center gap-1 ${deadline <= 5 && deadline >= 0 ? 'font-semibold text-red-500' : ''}`}>
                           <Clock size={12} />
                           {deadline < 0
                             ? `Quá hạn ${Math.abs(deadline)} ngày`

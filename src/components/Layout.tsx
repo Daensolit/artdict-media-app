@@ -6,6 +6,7 @@ import { useState, useRef } from 'react';
 import Login from '../pages/Login';
 import Modal from './Modal';
 import Avatar from './Avatar';
+import GlassSelect from './GlassSelect';
 import AmbientGlow from './AmbientGlow';
 import { getAvatarColor, getInitials, generateId, compressAvatarImage } from '../utils/helpers';
 import type { TeamRole } from '../types';
@@ -432,15 +433,11 @@ export default function Layout() {
 
           <div>
             <label className="label">Vai trò chuyên môn trong đoàn *</label>
-            <select
-              className="select w-full"
+            <GlassSelect
               value={profileRole}
-              onChange={(e) => setProfileRole(e.target.value as TeamRole)}
-            >
-              {ROLE_OPTIONS.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+              onChange={(v) => setProfileRole(v as TeamRole)}
+              options={ROLE_OPTIONS}
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

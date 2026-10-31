@@ -102,11 +102,11 @@ export default function AdminDashboard() {
     setTimeout(() => setRulesSaved(false), 2500);
   };
 
-  // High risk jobs
+  // High risk jobs (sắp đến hạn <= 5 ngày)
   const urgentProjects = projects.filter((p) => {
     if (p.status === 'Delivered' || p.status === 'Archived') return false;
     const days = daysUntil(p.deadline);
-    return days <= 3;
+    return days <= 5;
   });
 
   // Gear not available
@@ -648,12 +648,12 @@ export default function AdminDashboard() {
       {activeTab === 'risks' && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Urgent Deadlines */}
+            {/* Urgent Deadlines (<= 5 ngày) */}
             <div className="card p-5 border-t-4 border-t-red-500">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-red-500" />
-                  <span>Dự án sắp đến hạn (&le; 3 ngày)</span>
+                  <span>Dự án sắp đến hạn (&le; 5 ngày)</span>
                 </h3>
                 <span className="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 text-xs font-bold">
                   {urgentProjects.length}

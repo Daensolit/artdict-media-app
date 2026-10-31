@@ -19,6 +19,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import GlassSelect from '../components/GlassSelect';
 import type { Invoice, InvoiceItem, PaymentStatus } from '../types';
 import {
   formatCurrency,
@@ -471,18 +472,18 @@ export default function InvoicePage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select
-          className="select w-full sm:w-48"
+        <GlassSelect
+          className="w-full sm:w-52"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as PaymentStatus | 'All')}
-        >
-          <option value="All">Tất cả trạng thái</option>
-          {paymentStatusOptions.map((s) => (
-            <option key={s} value={s}>
-              {paymentStatusLabels[s]}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setStatusFilter(val as PaymentStatus | 'All')}
+          options={[
+            { value: 'All', label: 'Tất cả trạng thái' },
+            ...paymentStatusOptions.map((s) => ({
+              value: s,
+              label: paymentStatusLabels[s],
+            })),
+          ]}
+        />
       </div>
 
       {/* Table */}
@@ -618,19 +619,15 @@ export default function InvoicePage() {
             {/* Project */}
             <div>
               <label className="label">Dự án *</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={formProjectId}
-                onChange={(e) => handleProjectChange(e.target.value)}
-                required
-              >
-                <option value="">-- Chọn dự án --</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onChange={handleProjectChange}
+                placeholder="-- Chọn dự án --"
+                options={[
+                  { value: '', label: '-- Chọn dự án --' },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
           </div>
 
@@ -779,17 +776,14 @@ export default function InvoicePage() {
             </div>
             <div>
               <label className="label">Trạng thái</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={formPaymentStatus}
-                onChange={(e) => setFormPaymentStatus(e.target.value as PaymentStatus)}
-              >
-                {paymentStatusOptions.map((s) => (
-                  <option key={s} value={s}>
-                    {paymentStatusLabels[s]}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormPaymentStatus(val as PaymentStatus)}
+                options={paymentStatusOptions.map((s) => ({
+                  value: s,
+                  label: paymentStatusLabels[s],
+                }))}
+              />
             </div>
             <div>
               <label className="label">Tiền đặt cọc</label>

@@ -24,6 +24,7 @@ import {
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
 import Avatar from '../components/Avatar';
+import GlassSelect from '../components/GlassSelect';
 import type { TeamMember, TeamRole } from '../types';
 import {
   generateId,
@@ -605,23 +606,16 @@ export default function Team() {
             {/* Role */}
             <div>
               <label className="label">Vai trò *</label>
-              <select
-                className="select"
+              <GlassSelect
                 value={formData.role}
-                onChange={(e) =>
+                onChange={(val) =>
                   setFormData({
                     ...formData,
-                    role: e.target.value as TeamRole,
+                    role: val as TeamRole,
                   })
                 }
-                required
-              >
-                {ROLE_OPTIONS.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
+                options={ROLE_OPTIONS}
+              />
             </div>
 
             {/* Email */}
@@ -878,27 +872,22 @@ export default function Team() {
             />
           </div>
           <div className="flex gap-3">
-            <select
-              className="select"
+            <GlassSelect
+              className="min-w-[160px]"
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
-              <option value="all">Tất cả vai trò</option>
-              {ROLE_OPTIONS.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-            <select
-              className="select"
+              onChange={setRoleFilter}
+              options={[{ value: 'all', label: 'Tất cả vai trò' }, ...ROLE_OPTIONS.map((r) => ({ value: r, label: r }))]}
+            />
+            <GlassSelect
+              className="min-w-[170px]"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Ngưng hoạt động</option>
-            </select>
+              onChange={setStatusFilter}
+              options={[
+                { value: 'all', label: 'Tất cả trạng thái' },
+                { value: 'active', label: 'Đang hoạt động' },
+                { value: 'inactive', label: 'Ngưng hoạt động' },
+              ]}
+            />
           </div>
         </div>
       </div>

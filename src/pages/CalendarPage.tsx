@@ -37,6 +37,7 @@ import { useStore } from '../store/useStore';
 import { generateId, getProjectTypeColor } from '../utils/helpers';
 import type { CalendarEvent } from '../types';
 import Modal from '../components/Modal';
+import GlassSelect from '../components/GlassSelect';
 
 // ── Constants ──────────────────────────────────────────────────────────
 const WEEKDAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -629,32 +630,23 @@ export default function CalendarPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">Dự án</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.projectId}
-                onChange={(e) => updateForm('projectId', e.target.value)}
-              >
-                <option value="">-- Chọn dự án --</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => updateForm('projectId', val)}
+                placeholder="-- Chọn dự án --"
+                options={[
+                  { value: '', label: '-- Chọn dự án --' },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
             <div>
               <label className="label">Loại sự kiện</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.type}
-                onChange={(e) => updateForm('type', e.target.value as CalendarEvent['type'])}
-              >
-                {EVENT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => updateForm('type', val as CalendarEvent['type'])}
+                options={EVENT_TYPES}
+              />
             </div>
           </div>
 
@@ -702,17 +694,14 @@ export default function CalendarPage() {
             </div>
             <div>
               <label className="label">Nhắc nhở</label>
-              <select
-                className="select w-full"
-                value={form.reminder}
-                onChange={(e) => updateForm('reminder', Number(e.target.value))}
-              >
-                {REMINDER_OPTIONS.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
+              <GlassSelect
+                value={String(form.reminder)}
+                onChange={(val) => updateForm('reminder', Number(val))}
+                options={REMINDER_OPTIONS.map((r) => ({
+                  value: String(r.value),
+                  label: r.label,
+                }))}
+              />
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import Modal from '../components/Modal';
+import GlassSelect from '../components/GlassSelect';
 import {
   generateId,
   formatDate,
@@ -359,26 +360,24 @@ export default function Equipment() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <select
-          className="select"
+        <GlassSelect
+          className="min-w-[150px]"
           value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        >
-          <option value="all">Tất cả loại</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <select
-          className="select"
+          onChange={setFilterCategory}
+          options={[
+            { value: 'all', label: 'Tất cả loại' },
+            ...CATEGORIES.map((c) => ({ value: c, label: c })),
+          ]}
+        />
+        <GlassSelect
+          className="min-w-[170px]"
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="all">Tất cả trạng thái</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>{statusVietnamese[s]}</option>
-          ))}
-        </select>
+          onChange={setFilterStatus}
+          options={[
+            { value: 'all', label: 'Tất cả trạng thái' },
+            ...STATUSES.map((s) => ({ value: s, label: statusVietnamese[s] })),
+          ]}
+        />
       </div>
 
       {/* Equipment grid */}
@@ -510,17 +509,18 @@ export default function Equipment() {
         {isChecklistOpen && (
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
             {/* Project picker */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <select
-                className="select flex-1"
-                value={checklistProjectId}
-                onChange={(e) => setChecklistProjectId(e.target.value)}
-              >
-                <option value="">— Chọn dự án —</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex-1 w-full">
+                <GlassSelect
+                  value={checklistProjectId}
+                  onChange={setChecklistProjectId}
+                  placeholder="— Chọn dự án —"
+                  options={[
+                    { value: '', label: '— Chọn dự án —' },
+                    ...projects.map((p) => ({ value: p.id, label: p.name })),
+                  ]}
+                />
+              </div>
               {checklistProjectId && canManageEquipment && (
                 <button className="btn-primary flex items-center gap-2" onClick={openAddChecklist}>
                   <Plus className="w-4 h-4" /> Tạo checklist
@@ -652,17 +652,13 @@ export default function Equipment() {
             {/* Category */}
             <div>
               <label className="label">Loại *</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.category}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value as EquipmentCategory })
+                onChange={(val) =>
+                  setForm({ ...form, category: val as EquipmentCategory })
                 }
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                options={CATEGORIES}
+              />
             </div>
             {/* Brand */}
             <div>
@@ -694,47 +690,41 @@ export default function Equipment() {
             {/* Status */}
             <div>
               <label className="label">Trạng thái *</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.status}
-                onChange={(e) =>
-                  setForm({ ...form, status: e.target.value as EquipmentStatus })
+                onChange={(val) =>
+                  setForm({ ...form, status: val as EquipmentStatus })
                 }
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>{statusVietnamese[s]}</option>
-                ))}
-              </select>
+                options={STATUSES.map((s) => ({ value: s, label: statusVietnamese[s] }))}
+              />
             </div>
             {/* Assigned to */}
             <div>
               <label className="label">Người giữ</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.assignedToId}
-                onChange={(e) => setForm({ ...form, assignedToId: e.target.value })}
-              >
-                <option value="">— Không —</option>
-                {teamMembers
-                  .filter((m) => m.isActive)
-                  .map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-              </select>
+                onChange={(val) => setForm({ ...form, assignedToId: val })}
+                placeholder="— Không —"
+                options={[
+                  { value: '', label: '— Không —' },
+                  ...teamMembers
+                    .filter((m) => m.isActive)
+                    .map((m) => ({ value: m.id, label: m.name })),
+                ]}
+              />
             </div>
             {/* Current project */}
             <div>
               <label className="label">Dự án hiện tại</label>
-              <select
-                className="select w-full"
+              <GlassSelect
                 value={form.currentProjectId}
-                onChange={(e) => setForm({ ...form, currentProjectId: e.target.value })}
-              >
-                <option value="">— Không —</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+                onChange={(val) => setForm({ ...form, currentProjectId: val })}
+                placeholder="— Không —"
+                options={[
+                  { value: '', label: '— Không —' },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
+              />
             </div>
             {/* Purchase date */}
             <div>
@@ -822,19 +812,17 @@ export default function Equipment() {
             </div>
             <div>
               <label className="label">Người phụ trách *</label>
-              <select
-                className="select w-full"
-                required
+              <GlassSelect
                 value={checklistResponsible}
-                onChange={(e) => setChecklistResponsible(e.target.value)}
-              >
-                <option value="">— Chọn —</option>
-                {teamMembers
-                  .filter((m) => m.isActive)
-                  .map((m) => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-              </select>
+                onChange={setChecklistResponsible}
+                placeholder="— Chọn —"
+                options={[
+                  { value: '', label: '— Chọn —' },
+                  ...teamMembers
+                    .filter((m) => m.isActive)
+                    .map((m) => ({ value: m.id, label: m.name })),
+                ]}
+              />
             </div>
             <div>
               <label className="label">Ghi chú</label>
@@ -905,20 +893,21 @@ export default function Equipment() {
                     <span className="text-sm flex-1 text-gray-900 dark:text-gray-100 truncate">
                       {equipmentName(ci.equipmentId)}
                     </span>
-                    <select
-                      className="select text-sm"
-                      value={ci.assignedToId}
-                      onChange={(e) =>
-                        updateChecklistItemField(ci.equipmentId, 'assignedToId', e.target.value)
-                      }
-                    >
-                      <option value="">— Người giữ —</option>
-                      {teamMembers
-                        .filter((m) => m.isActive)
-                        .map((m) => (
-                          <option key={m.id} value={m.id}>{m.name}</option>
-                        ))}
-                    </select>
+                    <div className="w-48">
+                      <GlassSelect
+                        value={ci.assignedToId}
+                        onChange={(val) =>
+                          updateChecklistItemField(ci.equipmentId, 'assignedToId', val)
+                        }
+                        placeholder="— Người giữ —"
+                        options={[
+                          { value: '', label: '— Người giữ —' },
+                          ...teamMembers
+                            .filter((m) => m.isActive)
+                            .map((m) => ({ value: m.id, label: m.name })),
+                        ]}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
